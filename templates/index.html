@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Groupie Tracker</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="/static/css/search.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>GROUPIE TRACKER</h1>
+            <p>Discover Artists and Their Concert History</p>
+            
+            <!-- Search form with live suggestions -->
+            <form class="search-form" action="/search" method="GET">
+                <div class="search-container">
+                    <input type="text" 
+                           class="search-input"
+                           name="q" 
+                           placeholder="Search artists, members, locations..."
+                           autocomplete="off">
+                    <div class="search-suggestions">
+                        <div class="suggestions-list"></div>
+                    </div>
+                </div>
+            </form>
+        </header>
+
+        <main>
+            <div class="artists-grid">
+                {{range .}}
+                <div class="artist-card">
+                    <a href="/artist?id={{.ID}}" class="artist-link">
+                        <div class="image-container">
+                            <img src="{{.Image}}" alt="{{.Name}}" loading="lazy">
+                        </div>
+                        <div class="artist-info">
+                            <h2>{{.Name}}</h2>
+                        </div>
+                    </a>
+                </div>
+                {{end}}
+            </div>
+        </main>
+
+        <footer>
+            <p>© 2024 Groupie Tracker. All rights reserved.</p>
+        </footer>
+    </div>
+
+    <script src="/static/js/main.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+        const searchInput = document.querySelector('.search-input');
+        const suggestionsList = document.querySelector('.suggestions-list');
+        const searchContainer = document.querySelector('.search-suggestions');
+
+        searchInput.addEventListener('input', (e) => {
+            const query = e.target.value.trim();
+            
+            if (query === '') {
+                suggestionsList.innerHTML = '';
+                searchContainer.style.display = 'none';
+                return;
+            }
+
+            fetch(`/search?q=${encodeURIComponent(query)}`, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(results => {
+                if (results.length === 0) {
+                    suggestionsList.innerHTML = '';
+                    searchContainer.style.display = 'none';
+                    return;
+                }
+
+                searchContainer.style.display = 'block';
+                suggestionsList.innerHTML = results.map(suggestion => `
+                    <div class="suggestion-item">
+                        <span class="suggestion-text">${suggestion.text}</span>
+                        <span class="suggestion-type">${suggestion.type}</span>
+                    </div>
+                `).join('');
+            })
+            .catch(error => {
+                console.error('Failed to fetch suggestions:', error);
+                searchContainer.style.display = 'none';
+            });
+        });
+
+        // Close suggestions when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!searchContainer.contains(e.target) && !searchInput.contains(e.target)) {
+                searchContainer.style.display = 'none';
+            }
+        });
+    });
+    </script>
+</body>
+</html>
