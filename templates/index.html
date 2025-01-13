@@ -5,7 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Groupie Tracker</title>
     <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="/static/css/filter.css">
     <link rel="stylesheet" href="/static/css/search.css">
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="container">
@@ -15,7 +18,7 @@
                     <h1>GROUPIE TRACKER</h1>
                     <p>Discover Artists and Their Concert History</p>
                     
-                    <!-- Search form -->
+                    <!-- Search form with live suggestions -->
                     <form class="search-form" action="/search" method="GET">
                         <div class="search-container">
                             <input type="text" 
@@ -94,7 +97,7 @@
                                 <div class="checkbox-grid">
                                     <label class="checkbox-label">
                                         <input type="checkbox" value="1" class="member-checkbox">
-                                        <span>1</span>  
+                                        <span>1</span>
                                     </label>
                                     <label class="checkbox-label">
                                         <input type="checkbox" value="2" class="member-checkbox">
@@ -155,8 +158,8 @@
                 <div class="artist-card" 
                      data-creation-year="{{.CreationDate}}"
                      data-members="{{len .Members}}"
-                     data-locations="{{range .LocationsList}}{{.}},{{end}}"
-                     data-first-album="{{.FirstAlbum}}">
+                     data-first-album="{{.FirstAlbum}}"
+                     data-locations="{{range $index, $location := .LocationsList}}{{if $index}},{{end}}{{$location}}{{end}}">
                     <a href="/artist?id={{.ID}}" class="artist-link">
                         <div class="image-container">
                             <img src="{{.Image}}" alt="{{.Name}}" loading="lazy">
@@ -177,5 +180,7 @@
 
     <script src="/static/js/main.js"></script>
     <script src="/static/js/filter.js"></script>
+    <script src="/static/js/search.js"></script>
+
 </body>
 </html>

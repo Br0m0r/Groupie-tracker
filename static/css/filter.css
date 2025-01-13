@@ -1,18 +1,6 @@
-/* Add to style.css */
+/* filter.css */
 
-.header-content {
-    position: relative;
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 3rem;
-}
-
-.header-main {
-    flex: 1;
-}
-
-/* Filter Styles */
+/* Filter Panel */
 .filter-section {
     position: relative;
     margin-left: 2rem;
@@ -41,15 +29,15 @@
     position: absolute;
     top: 100%;
     right: 0;
-    width: 300px;
-    background: rgba(255, 255, 255, 0.1);
+    width: 350px;
+    background: rgba(0, 0, 0, 0.8);
     backdrop-filter: blur(10px);
     border-radius: 1rem;
     padding: 1.5rem;
     margin-top: 1rem;
-    border: 1px solid rgba(255, 255, 255, 0.1);
     display: none;
     z-index: 1000;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
 }
 
 .filter-panel.active {
@@ -57,12 +45,17 @@
     animation: fadeInDown 0.3s ease;
 }
 
+/* Filter Groups */
 .filter-group {
     margin-bottom: 1.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .filter-group:last-child {
     margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
 }
 
 .filter-group h3 {
@@ -74,25 +67,70 @@
     align-items: center;
 }
 
-/* Range Slider Styles */
+/* Range Sliders */
 .range-inputs {
     position: relative;
-    padding: 0.5rem 0;
+    padding: 1rem 0;
+    margin: 0 0.5rem;
+}
+
+.range-track {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 2px;
+    transform: translateY(-50%);
+    pointer-events: none;
 }
 
 .range-slider {
+    position: absolute;
     width: 100%;
-    margin: 0.5rem 0;
+    
+    background: transparent;
+    pointer-events: none;
+}
+
+.range-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--primary-color);
+    cursor: pointer;
+    pointer-events: auto;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    transition: transform 0.2s ease;
+}
+
+.range-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+}
+
+.range-slider::-webkit-slider-runnable-track {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 4px;
+    background: transparent;
+    border: none;
 }
 
 .range-values {
-    color: white;
-    font-size: 0.9rem;
     text-align: center;
-    margin-top: 0.5rem;
+    color: white;
+    margin-top: 1.5rem;
+    font-size: 0.9rem;
 }
 
-/* Checkbox Grid */
+.range-values span {
+    font-weight: bold;
+    color: var(--primary-color);
+}
+
+/* Member Checkboxes */
 .checkbox-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -105,22 +143,30 @@
     gap: 0.5rem;
     color: white;
     cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 0.25rem;
+    transition: background-color 0.2s ease;
+}
+
+.checkbox-label:hover {
+    background: rgba(255, 255, 255, 0.1);
 }
 
 .checkbox-label input {
     accent-color: var(--primary-color);
+    width: 16px;
+    height: 16px;
 }
 
-/* Locations List */
-.toggle-locations {
-    background: none;
-    border: none;
-    color: white;
-    cursor: pointer;
-    padding: 0.25rem;
+.checkbox-label span {
+    font-size: 0.9rem;
 }
 
+/* Locations Filter */
 .locations-container {
+    margin-top: 1rem;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 0.5rem;
     max-height: 200px;
     overflow-y: auto;
 }
@@ -130,20 +176,46 @@
 }
 
 .locations-list {
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
     gap: 0.5rem;
+    padding: 0.75rem;
 }
 
 .location-checkbox {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    color: white;
-    padding: 0.25rem 0;
+    padding: 0.25rem;
 }
 
-/* Custom Scrollbar */
+.location-checkbox input[type="checkbox"] {
+    margin-right: 0.5rem;
+    accent-color: var(--primary-color);
+}
+
+.location-checkbox span {
+    font-size: 0.75rem;
+    color: white;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Toggle button for locations */
+.toggle-locations {
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    padding: 0.25rem;
+    transition: transform 0.3s ease;
+}
+
+.toggle-locations svg {
+    transition: transform 0.3s ease;
+}
+
+/* Custom scrollbar */
 .locations-container::-webkit-scrollbar {
     width: 6px;
 }
@@ -172,11 +244,6 @@
 
 /* Responsive Design */
 @media (max-width: 768px) {
-    .header-content {
-        flex-direction: column;
-        align-items: stretch;
-    }
-
     .filter-section {
         margin-left: 0;
         margin-top: 1rem;
@@ -188,8 +255,26 @@
         left: 50%;
         transform: translate(-50%, -50%);
         width: 90%;
-        max-width: 300px;
+        max-width: 350px;
         max-height: 80vh;
         overflow-y: auto;
+    }
+
+    .locations-list {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .checkbox-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 480px) {
+    .locations-list {
+        grid-template-columns: repeat(1, 1fr);
+    }
+
+    .checkbox-grid {
+        grid-template-columns: repeat(2, 1fr);
     }
 }
