@@ -6,33 +6,157 @@
     <title>Groupie Tracker</title>
     <link rel="stylesheet" href="/static/css/style.css">
     <link rel="stylesheet" href="/static/css/search.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>GROUPIE TRACKER</h1>
-            <p>Discover Artists and Their Concert History</p>
-            
-            <!-- Search form with live suggestions -->
-            <form class="search-form" action="/search" method="GET">
-                <div class="search-container">
-                    <input type="text" 
-                           class="search-input"
-                           name="q" 
-                           placeholder="Search artists, members, locations..."
-                           autocomplete="off">
-                    <div class="search-suggestions">
-                        <div class="suggestions-list"></div>
+            <div class="header-content">
+                <div class="header-main">
+                    <h1>GROUPIE TRACKER</h1>
+                    <p>Discover Artists and Their Concert History</p>
+                    
+                    <!-- Search form -->
+                    <form class="search-form" action="/search" method="GET">
+                        <div class="search-container">
+                            <input type="text" 
+                                   class="search-input"
+                                   name="q" 
+                                   placeholder="Search artists, members, locations..."
+                                   autocomplete="off">
+                            <div class="search-suggestions">
+                                <div class="suggestions-list"></div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- Filter Button and Panel -->
+                <div class="filter-section">
+                    <button id="filterToggle" class="filter-toggle">
+                        Filters
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M3 6h18M6 12h12m-9 6h6"/>
+                        </svg>
+                    </button>
+                    
+                    <div id="filterPanel" class="filter-panel">
+                        <!-- Year Range Filters -->
+                        <div class="filter-group">
+                            <h3>Creation Year</h3>
+                            <div class="range-inputs">
+                                <div class="range-track" id="creationYearRange"></div>
+                                <input type="range" 
+                                       id="creationYearMin" 
+                                       min="1950" 
+                                       max="2024" 
+                                       value="1950" 
+                                       class="range-slider range-slider-min">
+                                <input type="range" 
+                                       id="creationYearMax" 
+                                       min="1950" 
+                                       max="2024" 
+                                       value="2024" 
+                                       class="range-slider range-slider-max">
+                                <div class="range-values">
+                                    <span id="creationYearMinValue">1950</span> - 
+                                    <span id="creationYearMaxValue">2024</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="filter-group">
+                            <h3>First Album Year</h3>
+                            <div class="range-inputs">
+                                <div class="range-track" id="albumYearRange"></div>
+                                <input type="range" 
+                                       id="albumYearMin" 
+                                       min="1950" 
+                                       max="2024" 
+                                       value="1950" 
+                                       class="range-slider range-slider-min">
+                                <input type="range" 
+                                       id="albumYearMax" 
+                                       min="1950" 
+                                       max="2024" 
+                                       value="2024" 
+                                       class="range-slider range-slider-max">
+                                <div class="range-values">
+                                    <span id="albumYearMinValue">1950</span> - 
+                                    <span id="albumYearMaxValue">2024</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Members Filter -->
+                        <div class="filter-group">
+                            <h3>Number of Members</h3>
+                            <div class="members-checkboxes">
+                                <div class="checkbox-grid">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" value="1" class="member-checkbox">
+                                        <span>1</span>  
+                                    </label>
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" value="2" class="member-checkbox">
+                                        <span>2</span>
+                                    </label>
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" value="3" class="member-checkbox">
+                                        <span>3</span>
+                                    </label>
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" value="4" class="member-checkbox">
+                                        <span>4</span>
+                                    </label>
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" value="5" class="member-checkbox">
+                                        <span>5</span>
+                                    </label>
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" value="6" class="member-checkbox">
+                                        <span>6</span>
+                                    </label>
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" value="7" class="member-checkbox">
+                                        <span>7</span>
+                                    </label>
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" value="8" class="member-checkbox">
+                                        <span>8</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Locations Filter -->
+                        <div class="filter-group">
+                            <h3>
+                                Locations
+                                <button id="toggleLocations" class="toggle-locations">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                        <path d="M6 9l6 6 6-6"/>
+                                    </svg>
+                                </button>
+                            </h3>
+                            <div id="locationsContainer" class="locations-container hidden">
+                                <div class="locations-list">
+                                    <!-- Locations will be populated by JavaScript -->
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </form>
+            </div>
         </header>
 
         <main>
             <div class="artists-grid">
                 {{range .}}
-                <div class="artist-card">
+                <div class="artist-card" 
+                     data-creation-year="{{.CreationDate}}"
+                     data-members="{{len .Members}}"
+                     data-locations="{{range .LocationsList}}{{.}},{{end}}"
+                     data-first-album="{{.FirstAlbum}}">
                     <a href="/artist?id={{.ID}}" class="artist-link">
                         <div class="image-container">
                             <img src="{{.Image}}" alt="{{.Name}}" loading="lazy">
@@ -52,7 +176,6 @@
     </div>
 
     <script src="/static/js/main.js"></script>
-    <script src="/static/js/search.js"></script>
-
+    <script src="/static/js/filter.js"></script>
 </body>
 </html>

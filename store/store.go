@@ -44,9 +44,13 @@ func (ds *DataStore) GetArtistCards() []models.ArtistCard {
 	cards := make([]models.ArtistCard, len(ds.Artists))
 	for i, artist := range ds.Artists {
 		cards[i] = models.ArtistCard{
-			ID:    artist.ID,
-			Name:  artist.Name,
-			Image: artist.Image,
+			ID:            artist.ID,
+			Name:          artist.Name,
+			Image:         artist.Image,
+			CreationDate:  artist.CreationDate,
+			FirstAlbum:    artist.FirstAlbum,
+			Members:       artist.Members,
+			LocationsList: artist.LocationsList,
 		}
 	}
 	return cards

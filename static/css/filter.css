@@ -1,0 +1,195 @@
+/* Add to style.css */
+
+.header-content {
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 3rem;
+}
+
+.header-main {
+    flex: 1;
+}
+
+/* Filter Styles */
+.filter-section {
+    position: relative;
+    margin-left: 2rem;
+}
+
+.filter-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.25rem;
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 2rem;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.filter-toggle:hover {
+    background: var(--primary-dark);
+    transform: translateY(-2px);
+}
+
+.filter-panel {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    width: 300px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    margin-top: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    display: none;
+    z-index: 1000;
+}
+
+.filter-panel.active {
+    display: block;
+    animation: fadeInDown 0.3s ease;
+}
+
+.filter-group {
+    margin-bottom: 1.5rem;
+}
+
+.filter-group:last-child {
+    margin-bottom: 0;
+}
+
+.filter-group h3 {
+    color: white;
+    font-size: 1rem;
+    margin-bottom: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Range Slider Styles */
+.range-inputs {
+    position: relative;
+    padding: 0.5rem 0;
+}
+
+.range-slider {
+    width: 100%;
+    margin: 0.5rem 0;
+}
+
+.range-values {
+    color: white;
+    font-size: 0.9rem;
+    text-align: center;
+    margin-top: 0.5rem;
+}
+
+/* Checkbox Grid */
+.checkbox-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.75rem;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: white;
+    cursor: pointer;
+}
+
+.checkbox-label input {
+    accent-color: var(--primary-color);
+}
+
+/* Locations List */
+.toggle-locations {
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    padding: 0.25rem;
+}
+
+.locations-container {
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.locations-container.hidden {
+    display: none;
+}
+
+.locations-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.location-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: white;
+    padding: 0.25rem 0;
+}
+
+/* Custom Scrollbar */
+.locations-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.locations-container::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+}
+
+.locations-container::-webkit-scrollbar-thumb {
+    background: var(--primary-color);
+    border-radius: 3px;
+}
+
+/* Animations */
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .header-content {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .filter-section {
+        margin-left: 0;
+        margin-top: 1rem;
+    }
+
+    .filter-panel {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 90%;
+        max-width: 300px;
+        max-height: 80vh;
+        overflow-y: auto;
+    }
+}

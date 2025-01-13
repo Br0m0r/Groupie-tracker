@@ -3,9 +3,11 @@ package handlers
 
 import (
 	"html/template"
+	"log"
 	"net/http"
 	"net/url"
 	"strconv"
+	"strings"
 
 	"groupie/models"
 	"groupie/store" // Add this import
@@ -22,20 +24,41 @@ type ArtistTemplateData struct {
 	RefererQuery string
 }
 
+// FuncMap for template functions
+var funcMap = template.FuncMap{
+	"join": strings.Join,
+	"parseDate": func(date string) int {
+		// Assuming date is in format "DD-MM-YYYY"
+		parts := strings.Split(date, "-")
+		if len(parts) >= 3 {
+			year, _ := strconv.Atoi(parts[2])
+			return year
+		}
+		return 0
+	},
+}
+
 func HomeHandler(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/" {
 		ErrorHandler(w, ErrNotFound, "Page not exist")
 		return
 	}
 
-	tmpl, err := template.ParseFiles("templates/index.html")
+	// Parse template
+	tmpl, err := template.New("index.html").Funcs(funcMap).ParseFiles("templates/index.html")
 	if err != nil {
+		log.Printf("Template parsing error: %v", err)
 		ErrorHandler(w, ErrInternalServer, "Failed to load template")
 		return
 	}
 
-	err = tmpl.Execute(w, dataStore.GetArtistCards())
+	// Get data
+	artists := dataStore.GetArtistCards()
+
+	// Execute template
+	err = tmpl.Execute(w, artists)
 	if err != nil {
+		log.Printf("Template execution error: %v", err)
 		ErrorHandler(w, ErrInternalServer, "Failed to execute template")
 		return
 	}
