@@ -1,4 +1,3 @@
-// main.go
 package main
 
 import (
@@ -11,20 +10,22 @@ import (
 	"groupie/store"
 )
 
+// API base URL and server port
 const (
 	baseURL = "https://groupietrackers.herokuapp.com/api"
 	port    = ":8080"
 )
 
+// setupServer configures and returns the HTTP router
 func setupServer() *http.ServeMux {
 	mux := http.NewServeMux()
 
-	// Route handlers
+	// Configure routes
 	mux.HandleFunc("/", handlers.HomeHandler)
 	mux.HandleFunc("/artist", handlers.ArtistHandler)
 	mux.HandleFunc("/search", handlers.SearchHandler)
 
-	// Serve static files
+	// Static file handling
 	fileServer := http.FileServer(http.Dir("static"))
 	mux.Handle("/static/", http.StripPrefix("/static/", fileServer))
 
@@ -37,16 +38,14 @@ func main() {
 	startTime := time.Now()
 
 	dataStore := store.New()
-	if err := dataStore.Initialize(baseURL); err != nil {
+	if err := dataStore.Initialize(); err != nil {
 		log.Fatalf("Failed to initialize data store: %v", err)
 	}
 
-	// Initialize handlers with the data store
-	handlers.Initialize(dataStore) // This is now correct
-
+	handlers.Initialize(dataStore)
 	fmt.Printf("Data store initialized in %v\n", time.Since(startTime))
 
-	// Setup server
+	// Configure and start HTTP server
 	mux := setupServer()
 	server := &http.Server{
 		Addr:         port,
@@ -56,7 +55,6 @@ func main() {
 		IdleTimeout:  60 * time.Second,
 	}
 
-	// Start server
 	fmt.Printf("Server starting on http://localhost%s\n", port)
 	fmt.Println("Press Ctrl+C to stop the server")
 

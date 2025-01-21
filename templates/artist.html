@@ -6,16 +6,13 @@
     <title>{{.Name}} - Artist Details</title>
     <link rel="stylesheet" href="/static/css/style.css">
     <link rel="stylesheet" href="/static/css/artist.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="container">
         <div class="navigation">
             <div class="nav-buttons">
                 <a href="/" class="back-button">← Back to Artists</a>
-                {{if .RefererQuery}}
-                    <a href="/search?q={{.RefererQuery}}" class="back-button back-to-results">↶ Back to Results</a>
-                {{end}}
+                <a href="#" class="back-button back-to-results" id="backToResults" style="display: none">↶ Back to Results</a>
             </div>
         </div>
         
@@ -87,5 +84,17 @@
     </div>
 
     <script src="/static/js/main.js"></script>
+    <script>
+        // Show back to results button only if coming from search page
+        document.addEventListener('DOMContentLoaded', () => {
+            const referrer = document.referrer;
+            const backButton = document.getElementById('backToResults');
+            
+            if (referrer && referrer.includes('/search')) {
+                backButton.style.display = 'inline-flex';
+                backButton.href = referrer;
+            }
+        });
+    </script>
 </body>
 </html>

@@ -1,27 +1,23 @@
-// handlers/handlers.go
+// Package handlers provides HTTP request handlers for the web application
 package handlers
 
 import (
 	"html/template"
 	"net/http"
-	"net/url"
 	"strconv"
 
-	"groupie/models"
-	"groupie/store" // Add this import
+	"groupie/store"
 )
 
-var dataStore *store.DataStore // Change to store.DataStore
+// dataStore holds the application's data layer
+var dataStore *store.DataStore
 
-func Initialize(ds *store.DataStore) { // Change parameter type
+// Initialize sets up the handlers package with a data store instance
+func Initialize(ds *store.DataStore) {
 	dataStore = ds
 }
 
-type ArtistTemplateData struct {
-	models.Artist
-	RefererQuery string
-}
-
+// HomeHandler serves the main page with artist listings
 func HomeHandler(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/" {
 		ErrorHandler(w, ErrNotFound, "Page not exist")
@@ -41,7 +37,9 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// ArtistHandler serves individual artist details pages
 func ArtistHandler(w http.ResponseWriter, r *http.Request) {
+	// Extract and validate artist ID
 	idStr := r.URL.Query().Get("id")
 	if idStr == "" {
 		ErrorHandler(w, ErrBadRequest, "Artist ID is required")
@@ -54,27 +52,11 @@ func ArtistHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Fetch artist data
 	artist, err := dataStore.GetArtist(id)
 	if err != nil {
 		ErrorHandler(w, ErrNotFound, "Artist not found")
 		return
-	}
-
-	// Get the referer query if coming from search
-	var refererQuery string
-	referer := r.Header.Get("Referer")
-	if referer != "" {
-		if refURL, err := url.Parse(referer); err == nil {
-			if refURL.Path == "/search" {
-				refererQuery = refURL.Query().Get("q")
-			}
-		}
-	}
-
-	// Create template data
-	data := ArtistTemplateData{
-		Artist:       artist,
-		RefererQuery: refererQuery,
 	}
 
 	tmpl, err := template.ParseFiles("templates/artist.html")
@@ -83,7 +65,7 @@ func ArtistHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = tmpl.Execute(w, data)
+	err = tmpl.Execute(w, artist)
 	if err != nil {
 		ErrorHandler(w, ErrInternalServer, "Failed to execute template")
 		return

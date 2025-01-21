@@ -1,4 +1,9 @@
-/* static/css/artist.css */
+/* 
+ * Artist Profile Page Styles
+ * Specific styles for artist profile pages including layout, components and interactions
+ */
+
+/* Artist Profile Container */
 .artist-profile {
   background: rgba(255, 255, 255, 0.05);
   border-radius: 1.5rem;
@@ -7,7 +12,7 @@
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-/* Navigation */
+/* Navigation Section */
 .navigation {
   margin-bottom: 2rem;
 }
@@ -18,25 +23,7 @@
   flex-wrap: wrap;
 }
 
-.back-button {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.75rem 1.5rem;
-  background: var(--card-bg);
-  color: var(--primary-color);
-  text-decoration: none;
-  border-radius: 2rem;
-  font-weight: 500;
-  transition: var(--transition-standard);
-  box-shadow: 0 3px 10px rgba(0,0,0,0.1);
-}
-
-.back-button:hover {
-  background: var(--primary-color);
-  color: white;
-  transform: translateX(-5px);
-}
-
+/* Back Button Variant */
 .back-to-results {
   background: var(--primary-color);
   color: white;
@@ -47,7 +34,7 @@
   transform: translateX(5px);
 }
 
-/* Artist Header */
+/* Artist Header Section */
 .artist-header {
   display: flex;
   gap: 2.5rem;
@@ -85,6 +72,7 @@
   line-height: 1.2;
 }
 
+/* Artist Details */
 .artist-details {
   margin-top: 1.5rem;
 }
@@ -99,7 +87,7 @@
   color: var(--primary-color);
 }
 
-/* Sections */
+/* Section Components */
 .members-section,
 .locations-section,
 .dates-section,
@@ -226,18 +214,6 @@
 
 .dates-list li:last-child {
   border-bottom: none;
-}
-
-/* Animations */
-@keyframes fadeInUp {
-  from {
-      opacity: 0;
-      transform: translateY(20px);
-  }
-  to {
-      opacity: 1;
-      transform: translateY(0);
-  }
 }
 
 /* Responsive Design */
