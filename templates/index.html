@@ -26,6 +26,45 @@
                     </div>
                 </div>
             </form>
+            <div class="filter-panel">
+                <div class="filter-section">
+                    <label>
+                        Creation Year: <span id="creationYearDisplay">1960-2024</span>
+                        <input type="range" id="creationYearMin" min="1960" max="2024" value="1960">
+                        <input type="range" id="creationYearMax" min="1960" max="2024" value="2024">
+                    </label>
+                    
+                    <label>
+                        First Album: <span id="albumYearDisplay">1960-2024</span>
+                        <input type="range" id="albumYearMin" min="1960" max="2024" value="1960">
+                        <input type="range" id="albumYearMax" min="1960" max="2024" value="2024">
+                    </label>
+                </div>
+            
+                <div class="filter-section members">
+                    <span>Members:</span>
+                    <div class="members-grid">
+                        <label><input type="checkbox" value="1">1</label>
+                        <label><input type="checkbox" value="2">2</label>
+                        <label><input type="checkbox" value="3">3</label>
+                        <label><input type="checkbox" value="4">4</label>
+                        <label><input type="checkbox" value="5">5</label>
+                        <label><input type="checkbox" value="6">6</label>
+                        <label><input type="checkbox" value="7">7</label>
+                        <label><input type="checkbox" value="8">8</label>
+                    </div>
+                </div>
+            
+                <div class="filter-section">
+                    <div class="locations-header" id="locationsToggle">
+                        Locations <span class="toggle-icon">▼</span>
+                    </div>
+                    <div class="locations-list" id="locationsList" style="display:none"></div>
+                </div>
+            
+                <button id="applyFilters" class="apply-filters-btn">Apply Filters</button>
+            </div>
+            
         </header>
 
         <main>
