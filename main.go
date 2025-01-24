@@ -10,13 +10,11 @@ import (
 	"groupie/store"
 )
 
-// API base URL and server port
 const (
 	baseURL = "https://groupietrackers.herokuapp.com/api"
 	port    = ":8080"
 )
 
-// setupServer configures and returns the HTTP router
 func setupServer() *http.ServeMux {
 	mux := http.NewServeMux()
 
@@ -24,6 +22,8 @@ func setupServer() *http.ServeMux {
 	mux.HandleFunc("/", handlers.HomeHandler)
 	mux.HandleFunc("/artist", handlers.ArtistHandler)
 	mux.HandleFunc("/search", handlers.SearchHandler)
+	mux.HandleFunc("/filter", handlers.FilterHandler)
+	mux.HandleFunc("/locations", handlers.LocationsHandler)
 
 	// Static file handling
 	fileServer := http.FileServer(http.Dir("static"))
@@ -33,7 +33,6 @@ func setupServer() *http.ServeMux {
 }
 
 func main() {
-	// Initialize data store
 	fmt.Println("Initializing data store...")
 	startTime := time.Now()
 
@@ -45,7 +44,6 @@ func main() {
 	handlers.Initialize(dataStore)
 	fmt.Printf("Data store initialized in %v\n", time.Since(startTime))
 
-	// Configure and start HTTP server
 	mux := setupServer()
 	server := &http.Server{
 		Addr:         port,
