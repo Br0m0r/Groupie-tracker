@@ -1,9 +1,11 @@
 package handlers
 
 import (
-	"encoding/json"
 	"fmt"
+	"html/template"
 	"net/http"
+	"sort"
+	"strconv"
 	"strings"
 
 	"groupie/models"
@@ -28,54 +30,78 @@ func FilterHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var params FilterParams
-	if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
-		ErrorHandler(w, ErrBadRequest, "Invalid filter parameters")
+	if err := r.ParseForm(); err != nil {
+		ErrorHandler(w, ErrBadRequest, "Failed to parse form data")
 		return
 	}
 
-	// Set default ranges if not provided
-	if params.Creation.Min == 0 && params.Creation.Max == 0 {
-		params.Creation.Min = 1950
-		params.Creation.Max = 2024
-	}
-	if params.Album.Min == 0 && params.Album.Max == 0 {
-		params.Album.Min = 1950
-		params.Album.Max = 2024
+	// Parse form values
+	creationMin, _ := strconv.Atoi(r.FormValue("creation_min"))
+	creationMax, _ := strconv.Atoi(r.FormValue("creation_max"))
+	albumMin, _ := strconv.Atoi(r.FormValue("album_min"))
+	albumMax, _ := strconv.Atoi(r.FormValue("album_max"))
+
+	members := make([]int, 0)
+	for _, m := range r.Form["members"] {
+		if val, err := strconv.Atoi(m); err == nil {
+			members = append(members, val)
+		}
 	}
 
+	locations := r.Form["locations"]
+
+	// Filter artists
 	allArtists := dataStore.GetAllArtists()
-	filteredArtists := make([]models.ArtistCard, 0)
+	filteredArtists := make([]models.Artist, 0)
 
 	for _, artist := range allArtists {
-		if !isInRange(artist.CreationDate, params.Creation.Min, params.Creation.Max) {
+		if !isInRange(artist.CreationDate, creationMin, creationMax) {
 			continue
 		}
 
 		albumYear := parseAlbumYear(artist.FirstAlbum)
-		if !isInRange(albumYear, params.Album.Min, params.Album.Max) {
+		if !isInRange(albumYear, albumMin, albumMax) {
 			continue
 		}
 
-		if len(params.Members) > 0 && !contains(params.Members, len(artist.Members)) {
+		if len(members) > 0 && !contains(members, len(artist.Members)) {
 			continue
 		}
 
-		if len(params.Locations) > 0 && !hasMatchingLocation(artist.LocationsList, params.Locations) {
+		if len(locations) > 0 && !hasMatchingLocation(artist.LocationsList, locations) {
 			continue
 		}
 
-		filteredArtists = append(filteredArtists, models.ArtistCard{
-			ID:    artist.ID,
-			Name:  artist.Name,
-			Image: artist.Image,
-		})
+		filteredArtists = append(filteredArtists, artist)
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(filteredArtists); err != nil {
-		ErrorHandler(w, ErrInternalServer, "Failed to encode response")
+	// Re-render the index page with filtered results
+	data := struct {
+		Artists   []models.Artist
+		Locations []string
+	}{
+		Artists:   filteredArtists,
+		Locations: getUniqueLocations(),
+	}
+
+	tmpl := template.New("index.html").Funcs(template.FuncMap{
+		"intRange": func(min, max int) []int {
+			a := make([]int, max-min)
+			for i := range a {
+				a[i] = min + i
+			}
+			return a
+		},
+	})
+
+	tmpl, err := tmpl.ParseFiles("templates/index.html")
+	if err != nil {
+		ErrorHandler(w, ErrInternalServer, "Failed to load template")
 		return
+	}
+
+	if err := tmpl.Execute(w, data); err != nil {
+		ErrorHandler(w, ErrInternalServer, "Failed to execute template")
 	}
 }
 
@@ -113,4 +139,19 @@ func parseAlbumYear(albumDate string) int {
 		return 1960
 	}
 	return year
+}
+
+func getUniqueLocations() []string {
+	locations := make(map[string]bool)
+	for _, artist := range dataStore.GetAllArtists() {
+		for _, loc := range artist.LocationsList {
+			locations[loc] = true
+		}
+	}
+	uniqueLocations := make([]string, 0, len(locations))
+	for loc := range locations {
+		uniqueLocations = append(uniqueLocations, loc)
+	}
+	sort.Strings(uniqueLocations)
+	return uniqueLocations
 }

@@ -1,68 +1,55 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // Range sliders update
-    ['creation', 'album'].forEach(type => {
-        const min = document.getElementById(`${type}YearMin`);
-        const max = document.getElementById(`${type}YearMax`);
-        const display = document.getElementById(`${type}YearDisplay`);
-        
-        [min, max].forEach(el => {
-            el.addEventListener('input', () => {
-                const minVal = Math.min(parseInt(min.value), parseInt(max.value));
-                const maxVal = Math.max(parseInt(min.value), parseInt(max.value));
-                min.value = minVal;
-                max.value = maxVal;
-                display.textContent = `${minVal}-${maxVal}`;
+    // Range input display updates
+    const updateRangeDisplay = (input, displayId) => {
+        const display = document.getElementById(displayId);
+        if (display) {
+            display.textContent = input.value;
+        }
+    };
+
+    // Creation year inputs
+    document.querySelectorAll('input[name="creation_min"], input[name="creation_max"]')
+        .forEach(input => {
+            input.addEventListener('input', (e) => {
+                const min = document.querySelector('input[name="creation_min"]');
+                const max = document.querySelector('input[name="creation_max"]');
+                
+                if (parseInt(min.value) > parseInt(max.value)) {
+                    if (e.target === min) {
+                        max.value = min.value;
+                    } else {
+                        min.value = max.value;
+                    }
+                }
             });
         });
-    });
 
-    // Locations toggle
-    document.getElementById('locationsToggle')?.addEventListener('click', () => {
-        const list = document.getElementById('locationsList');
-        const icon = document.querySelector('.toggle-icon');
-        list.style.display = list.style.display === 'none' ? 'block' : 'none';
-        icon.textContent = list.style.display === 'none' ? '▼' : '▲';
-    });
-
-    // Apply filters
-    document.getElementById('applyFilters')?.addEventListener('click', () => {
-        const filters = {
-            creation: {
-                min: parseInt(document.getElementById('creationYearMin').value),
-                max: parseInt(document.getElementById('creationYearMax').value)
-            },
-            album: {
-                min: parseInt(document.getElementById('albumYearMin').value),
-                max: parseInt(document.getElementById('albumYearMax').value)
-            },
-            members: [...document.querySelectorAll('.members-grid input:checked')].map(i => parseInt(i.value)),
-            locations: [...document.querySelectorAll('#locationsList input:checked')].map(i => i.value)
-        };
-
-        fetch('/filter', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(filters)
-        })
-        .then(res => res.json())
-        .then(artists => {
-            const grid = document.querySelector('.artists-grid');
-            grid.innerHTML = artists.length ? artists.map(artist => `
-                <div class="artist-card">
-                    <a href="/artist?id=${artist.id}" class="artist-link">
-                        <div class="image-container">
-                            <img src="${artist.image}" alt="${artist.name}" loading="lazy">
-                        </div>
-                        <div class="artist-info">
-                            <h2>${artist.name}</h2>
-                        </div>
-                    </a>
-                </div>
-            `).join('') : '<div class="no-results">No artists found matching your filters</div>';
-        })
-        .catch(() => {
-            document.querySelector('.artists-grid').innerHTML = 
-                '<div class="error-message">Failed to load filtered results</div>';
+    // Album year inputs
+    document.querySelectorAll('input[name="album_min"], input[name="album_max"]')
+        .forEach(input => {
+            input.addEventListener('input', (e) => {
+                const min = document.querySelector('input[name="album_min"]');
+                const max = document.querySelector('input[name="album_max"]');
+                
+                if (parseInt(min.value) > parseInt(max.value)) {
+                    if (e.target === min) {
+                        max.value = min.value;
+                    } else {
+                        min.value = max.value;
+                    }
+                }
+            });
         });
-    });
+
+    // Toggle locations list
+    const locationsHeader = document.querySelector('.locations-header');
+    const locationsList = document.querySelector('.locations-list');
+    
+    if (locationsHeader && locationsList) {
+        locationsHeader.addEventListener('click', () => {
+            const isHidden = locationsList.style.display === 'none';
+            locationsList.style.display = isHidden ? 'block' : 'none';
+            locationsHeader.innerHTML = `Locations ${isHidden ? '▲' : '▼'}`;
+        });
+    }
 });

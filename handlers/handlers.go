@@ -4,8 +4,10 @@ package handlers
 import (
 	"html/template"
 	"net/http"
+	"sort"
 	"strconv"
 
+	"groupie/models"
 	"groupie/store"
 )
 
@@ -24,16 +26,47 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	tmpl, err := template.ParseFiles("templates/index.html")
+	// Get all locations
+	locations := make(map[string]bool)
+	for _, artist := range dataStore.GetAllArtists() {
+		for _, loc := range artist.LocationsList {
+			locations[loc] = true
+		}
+	}
+	uniqueLocations := make([]string, 0, len(locations))
+	for loc := range locations {
+		uniqueLocations = append(uniqueLocations, loc)
+	}
+	sort.Strings(uniqueLocations)
+
+	// Create template with custom functions
+	funcMap := template.FuncMap{
+		"intRange": func(min, max int) []int {
+			a := make([]int, max-min)
+			for i := range a {
+				a[i] = min + i
+			}
+			return a
+		},
+	}
+
+	tmpl := template.New("index.html").Funcs(funcMap)
+	tmpl, err := tmpl.ParseFiles("templates/index.html")
 	if err != nil {
 		ErrorHandler(w, ErrInternalServer, "Failed to load template")
 		return
 	}
 
-	err = tmpl.Execute(w, dataStore.GetArtistCards())
-	if err != nil {
+	data := struct {
+		Artists   []models.ArtistCard
+		Locations []string
+	}{
+		Artists:   dataStore.GetArtistCards(),
+		Locations: uniqueLocations,
+	}
+
+	if err := tmpl.Execute(w, data); err != nil {
 		ErrorHandler(w, ErrInternalServer, "Failed to execute template")
-		return
 	}
 }
 
