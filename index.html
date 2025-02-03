@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Groupie Tracker</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <link rel="stylesheet" href="/static/css/search.css">
+  <link rel="stylesheet" href="/static/css/filters.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>GROUPIE TRACKER</h1>
+      <p>Discover Artists and Their Concert History</p>
+      
+      <!-- Search form with live suggestions -->
+      <form class="search-form" action="/search" method="GET">
+        <div class="search-container">
+          <input type="text" 
+                 class="search-input"
+                 name="q" 
+                 placeholder="Search artists, members, locations..."
+                 autocomplete="off">
+          <!-- Added max-height container for scrolling -->
+          <div class="search-suggestions">
+            <div class="suggestions-list-container">
+              <div class="suggestions-list"></div>
+            </div>
+          </div>
+        </div>
+      </form>
+    </header>
+
+    <main>
+      <!-- Filters button toggles the filters container -->
+      <button id="filters-btn">Filters</button>
+
+      <!-- Filters container with range and checkbox inputs -->
+      <div id="filters-container">
+        <div class="filter-group">
+          <label for="creation_min">Creation Date (Min):</label>
+          <input type="number" id="creation_min" name="creation_min" placeholder="e.g., 1980">
+        </div>
+        <div class="filter-group">
+          <label for="creation_max">Creation Date (Max):</label>
+          <input type="number" id="creation_max" name="creation_max" placeholder="e.g., 2020">
+        </div>
+        <div class="filter-group">
+          <label for="album_min">First Album Date (Min):</label>
+          <input type="number" id="album_min" name="album_min" placeholder="e.g., 1985">
+        </div>
+        <div class="filter-group">
+          <label for="album_max">First Album Date (Max):</label>
+          <input type="number" id="album_max" name="album_max" placeholder="e.g., 2020">
+        </div>
+        <div class="filter-group">
+          <label for="members_min">Number of Members (Min):</label>
+          <input type="number" id="members_min" name="members_min" placeholder="e.g., 1">
+        </div>
+        <div class="filter-group">
+          <label for="members_max">Number of Members (Max):</label>
+          <input type="number" id="members_max" name="members_max" placeholder="e.g., 10">
+        </div>
+        <div class="filter-group">
+          <label>Concert Locations:</label>
+          <div class="checkbox-group">
+            <label><input type="checkbox" name="locations" value="New York"> New York</label>
+            <label><input type="checkbox" name="locations" value="London"> London</label>
+            <label><input type="checkbox" name="locations" value="Paris"> Paris</label>
+            <label><input type="checkbox" name="locations" value="Tokyo"> Tokyo</label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Container where AJAX filter results will be displayed -->
+      <div id="filters-results"></div>
+
+      <!-- Artists grid -->
+      <div class="artists-grid">
+        {{range .}}
+        <div class="artist-card">
+          <a href="/artist?id={{.ID}}" class="artist-link">
+            <div class="image-container">
+              <img src="{{.Image}}" alt="{{.Name}}" loading="lazy">
+            </div>
+            <div class="artist-info">
+              <h2>{{.Name}}</h2>
+            </div>
+          </a>
+        </div>
+        {{end}}
+      </div>
+    </main>
+
+    <footer>
+      <p>© 2024 Groupie Tracker. All rights reserved.</p>
+    </footer>
+  </div>
+
+  <script src="/static/js/main.js"></script>
+  <script src="/static/js/search.js"></script>
+  <script src="/static/js/filters.js"></script>
+</body>
+</html>
