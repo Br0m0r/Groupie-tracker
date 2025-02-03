@@ -1,0 +1,81 @@
+/* Style for the Filters button */
+#filters-btn {
+    background-color: #007BFF;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    margin: 15px 0;
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 16px;
+  }
+  
+  /* The filters container is hidden by default */
+  #filters-container {
+    display: none;
+    padding: 15px;
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    margin-bottom: 20px;
+  }
+  
+  /* Style groups inside the filters container */
+  #filters-container .filter-group {
+    margin-bottom: 15px;
+  }
+  
+  /* Label styling for filter inputs */
+  #filters-container label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 5px;
+  }
+  
+  /* Range and number inputs take full width */
+  #filters-container input[type="range"],
+  #filters-container input[type="number"],
+  #filters-container input[type="text"] {
+    width: 100%;
+    padding: 5px;
+    margin-bottom: 5px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+  }
+  
+  /* Checkbox group styling */
+  #filters-container .checkbox-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  
+  #filters-container .checkbox-group label {
+    display: flex;
+    align-items: center;
+    font-weight: normal;
+  }
+  
+  #filters-container .checkbox-group input[type="checkbox"] {
+    margin-right: 5px;
+  }
+  
+  /* Filter results container styling */
+  #filters-results {
+    margin-top: 20px;
+  }
+  
+  .filter-result-item {
+    border-bottom: 1px solid #ddd;
+    padding: 10px 0;
+  }
+  
+  .filter-result-item a {
+    text-decoration: none;
+    color: #333;
+  }
+  
+  .filter-result-item a:hover {
+    text-decoration: underline;
+  }
+  
