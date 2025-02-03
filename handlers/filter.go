@@ -17,11 +17,13 @@ type FilterParams struct {
 }
 
 func FilterHandler(w http.ResponseWriter, r *http.Request) {
+	// Only allow POST requests
 	if r.Method != http.MethodPost {
 		ErrorHandler(w, ErrBadRequest, "Invalid request method")
 		return
 	}
 
+	// Parse the filter parameters from the request body
 	var params FilterParams
 	if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
 		ErrorHandler(w, ErrBadRequest, "Invalid filter parameters")
@@ -42,17 +44,19 @@ func FilterHandler(w http.ResponseWriter, r *http.Request) {
 
 		// Parse and check first album year
 		firstAlbumYear := parseYear(artist.FirstAlbum)
-		if firstAlbumYear != 0 &&
-			(firstAlbumYear < params.AlbumYearMin || firstAlbumYear > params.AlbumYearMax) {
+		if firstAlbumYear == 0 ||
+			firstAlbumYear < params.AlbumYearMin ||
+			firstAlbumYear > params.AlbumYearMax {
 			continue
 		}
 
-		// Check member count
-		memberCount := len(artist.Members)
+		// Check member count if any member filters are selected
 		if len(params.Members) > 0 {
+			memberCount := len(artist.Members)
 			isMatchingMembers := false
 			for _, count := range params.Members {
 				if count == 8 {
+					// 8+ members
 					if memberCount >= 8 {
 						isMatchingMembers = true
 						break
@@ -72,27 +76,34 @@ func FilterHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Return filtered artists as JSON
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(filteredArtists)
+	if err := json.NewEncoder(w).Encode(filteredArtists); err != nil {
+		ErrorHandler(w, ErrInternalServer, "Failed to encode response")
+		return
+	}
 }
 
 // Helper function to parse year from string
-// Helper function to parse year from string
 func parseYear(date string) int {
-	// Remove any non-digit characters and get only the year
+	// Extract 4-digit year from the date string
 	yearStr := ""
+	foundDigits := 0
 	for _, char := range date {
 		if char >= '0' && char <= '9' {
 			yearStr += string(char)
+			foundDigits++
+			if foundDigits == 4 {
+				break
+			}
 		}
 	}
 
-	// If we have a 4-digit year
-	if len(yearStr) >= 4 {
-		year, err := strconv.Atoi(yearStr[:4])
+	// Convert to integer if we found a 4-digit year
+	if len(yearStr) == 4 {
+		year, err := strconv.Atoi(yearStr)
 		if err == nil && year >= 1900 && year <= 2024 {
 			return year
 		}
 	}
 
-	return 0 // Return 0 if no valid year found
+	return 0
 }
