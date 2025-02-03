@@ -6,6 +6,8 @@
     <title>Groupie Tracker</title>
     <link rel="stylesheet" href="/static/css/style.css">
     <link rel="stylesheet" href="/static/css/search.css">
+    <link rel="stylesheet" href="/static/css/filter.css">
+
 </head>
 <body>
     <div class="container">
@@ -29,20 +31,104 @@
                     </div>
                 </div>
             </form>
+            <div class="filter-bar">
+                <form id="filterForm">
+                    <div class="filter-section">
+                        <!-- Creation Year Filter -->
+                        <div class="filter-group">
+                            <h3>Creation Year</h3>
+                            <div class="range-group">
+                                <label>
+                                    Year range: <span id="creationYearMin">1958</span> - <span id="creationYearValue">2024</span>
+                                </label>
+                                <input type="range" 
+                                       id="creationYearRange" 
+                                       class="range-slider"
+                                       min="1958" 
+                                       max="2024" 
+                                       value="2024">
+                            </div>
+                        </div>
+            
+                        <!-- First Album Year Filter -->
+                        <div class="filter-group">
+                            <h3>First Album Year</h3>
+                            <div class="range-group">
+                                <label>
+                                    Year range: <span id="albumYearMin">1958</span> - <span id="albumYearValue">2024</span>
+                                </label>
+                                <input type="range" 
+                                       id="albumYearRange" 
+                                       class="range-slider"
+                                       min="1958" 
+                                       max="2024" 
+                                       value="2024">
+                            </div>
+                        </div>
+            
+                        <!-- Members Filter -->
+                        <div class="filter-group">
+                            <h3>Number of Members</h3>
+                            <div class="checkbox-group">
+                                <div class="checkbox-wrapper">
+                                    <input type="checkbox" id="member1" value="1">
+                                    <label for="member1">1 Member</label>
+                                </div>
+                                <div class="checkbox-wrapper">
+                                    <input type="checkbox" id="member2" value="2">
+                                    <label for="member2">2 Members</label>
+                                </div>
+                                <div class="checkbox-wrapper">
+                                    <input type="checkbox" id="member3" value="3">
+                                    <label for="member3">3 Members</label>
+                                </div>
+                                <div class="checkbox-wrapper">
+                                    <input type="checkbox" id="member4" value="4">
+                                    <label for="member4">4 Members</label>
+                                </div>
+                                <div class="checkbox-wrapper">
+                                    <input type="checkbox" id="member5" value="5">
+                                    <label for="member5">5 Members</label>
+                                </div>
+                                <div class="checkbox-wrapper">
+                                    <input type="checkbox" id="member6" value="6">
+                                    <label for="member6">6 Members</label>
+                                </div>
+                                <div class="checkbox-wrapper">
+                                    <input type="checkbox" id="member7" value="7">
+                                    <label for="member7">7 Members</label>
+                                </div>
+                                <div class="checkbox-wrapper">
+                                    <input type="checkbox" id="member8" value="8">
+                                    <label for="member8">8+ Members</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="filter-buttons">
+                        <button type="submit" class="filter-button apply-filters">Apply Filters</button>
+                        <button type="button" class="filter-button reset-filters" id="resetFilters">Reset Filters</button>
+                    </div>
+                </form>
+            </div>
         </header>
 
         <main>
             <div class="artists-grid">
                 {{range .}}
-                <div class="artist-card">
-                    <a href="/artist?id={{.ID}}" class="artist-link">
-                        <div class="image-container">
-                            <img src="{{.Image}}" alt="{{.Name}}" loading="lazy">
-                        </div>
-                        <div class="artist-info">
-                            <h2>{{.Name}}</h2>
-                        </div>
-                    </a>
+                <div class="artist-card" 
+                    data-creation-date="{{.CreationDate}}" 
+                    data-first-album="{{.FirstAlbum}}"
+                    data-members="{{len .Members}}">
+                <a href="/artist?id={{.ID}}" class="artist-link">
+                    <div class="image-container">
+                        <img src="{{.Image}}" alt="{{.Name}}" loading="lazy">
+                    </div>
+                    <div class="artist-info">
+                        <h2>{{.Name}}</h2>
+                    </div>
+                </a>
                 </div>
                 {{end}}
             </div>
@@ -55,6 +141,7 @@
 
     <script src="/static/js/main.js"></script>
     <script src="/static/js/search.js"></script>
+    <script src="/static/js/filter.js"></script>
 
     
 </body>

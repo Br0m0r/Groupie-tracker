@@ -17,12 +17,13 @@ func Initialize(ds *store.DataStore) {
 	dataStore = ds
 }
 
-// HomeHandler serves the main page with artist listings
 func HomeHandler(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/" {
 		ErrorHandler(w, ErrNotFound, "Page not exist")
 		return
 	}
+
+	artists := dataStore.GetAllArtists()
 
 	tmpl, err := template.ParseFiles("templates/index.html")
 	if err != nil {
@@ -30,7 +31,7 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = tmpl.Execute(w, dataStore.GetArtistCards())
+	err = tmpl.Execute(w, artists)
 	if err != nil {
 		ErrorHandler(w, ErrInternalServer, "Failed to execute template")
 		return
