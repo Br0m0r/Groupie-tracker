@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"groupie/models"
 	"groupie/store"
 )
 
@@ -15,6 +16,11 @@ var dataStore *store.DataStore
 // Initialize sets up the handlers package with a data store instance
 func Initialize(ds *store.DataStore) {
 	dataStore = ds
+}
+
+type HomePageData struct {
+	Artists   []models.Artist
+	Locations []string // Unique locations for filter dropdown
 }
 
 func HomeHandler(w http.ResponseWriter, r *http.Request) {
@@ -31,7 +37,7 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = tmpl.Execute(w, artists)
+	err = tmpl.Execute(w, artists) // Pass artists directly
 	if err != nil {
 		ErrorHandler(w, ErrInternalServer, "Failed to execute template")
 		return

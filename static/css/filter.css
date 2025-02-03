@@ -1,9 +1,5 @@
-/* 
- * Filter Bar Styles
- * Contains styles specific to the filter functionality
- */
-
- .filter-bar {
+/* Filter Bar Styles */
+.filter-bar {
     background: rgba(255, 255, 255, 0.1);
     padding: 1.5rem;
     border-radius: 1rem;
@@ -31,46 +27,74 @@
     padding-bottom: 0.5rem;
 }
 
-/* Range Slider Styles */
-.range-group {
-    margin-bottom: 1rem;
-}
-
-.range-group label {
-    color: var(--text-light);
-    display: block;
-    margin-bottom: 0.5rem;
-    font-size: 0.9rem;
+/* Dual Range Slider Styles */
+.dual-range {
+    position: relative;
+    width: 100%;
+    height: 30px;
 }
 
 .range-slider {
+    -webkit-appearance: none;
+    appearance: none;
     width: 100%;
-    height: 5px;
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 5px;
-    
+    height: 4px;
+    background: transparent;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
 }
 
 .range-slider::-webkit-slider-thumb {
     -webkit-appearance: none;
-    width: 15px;
-    height: 15px;
-    border-radius: 50%;
+    appearance: none;
+    width: 16px;
+    height: 16px;
     background: var(--primary-color);
+    border-radius: 50%;
+    border: 2px solid white;
     cursor: pointer;
-    transition: var(--transition-standard);
+    pointer-events: auto;
+    transition: transform 0.2s ease;
 }
 
 .range-slider::-webkit-slider-thumb:hover {
     transform: scale(1.2);
 }
 
+.range-slider::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    background: var(--primary-color);
+    border-radius: 50%;
+    border: 2px solid white;
+    cursor: pointer;
+    pointer-events: auto;
+    transition: transform 0.2s ease;
+}
+
+.range-slider::-moz-range-thumb:hover {
+    transform: scale(1.2);
+}
+
+.slider-track {
+    position: absolute;
+    width: 100%;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.2);
+    top: 50%;
+    transform: translateY(-50%);
+    border-radius: 2px;
+}
+
 .range-values {
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 10px;
     color: var(--text-light);
-    font-size: 0.8rem;
-    margin-top: 0.5rem;
+    font-size: 0.9rem;
 }
 
 /* Checkbox Styles */
@@ -100,6 +124,7 @@
     border-radius: 0.5rem;
     background: rgba(255, 255, 255, 0.05);
     transition: var(--transition-standard);
+    width: 100%;
 }
 
 .checkbox-wrapper label:before {

@@ -6,8 +6,7 @@
     <title>Groupie Tracker</title>
     <link rel="stylesheet" href="/static/css/style.css">
     <link rel="stylesheet" href="/static/css/search.css">
-    <link rel="stylesheet" href="/static/css/filter.css">
-
+    <link rel="stylesheet" href="/static/css/filters.css">
 </head>
 <body>
     <div class="container">
@@ -23,7 +22,6 @@
                            name="q" 
                            placeholder="Search artists, members, locations..."
                            autocomplete="off">
-                    <!-- Added max-height container for scrolling -->
                     <div class="search-suggestions">
                         <div class="suggestions-list-container">
                             <div class="suggestions-list"></div>
@@ -31,6 +29,8 @@
                     </div>
                 </div>
             </form>
+
+            <!-- Filter Bar -->
             <div class="filter-bar">
                 <form id="filterForm">
                     <div class="filter-section">
@@ -38,34 +38,56 @@
                         <div class="filter-group">
                             <h3>Creation Year</h3>
                             <div class="range-group">
-                                <label>
-                                    Year range: <span id="creationYearMin">1958</span> - <span id="creationYearValue">2024</span>
-                                </label>
-                                <input type="range" 
-                                       id="creationYearRange" 
-                                       class="range-slider"
-                                       min="1958" 
-                                       max="2024" 
-                                       value="2024">
+                                <div class="dual-range">
+                                    <input type="range" 
+                                           id="creationYearMin" 
+                                           class="range-slider min-range"
+                                           min="1958" 
+                                           max="2024" 
+                                           value="1958">
+                                    <input type="range" 
+                                           id="creationYearMax" 
+                                           class="range-slider max-range"
+                                           min="1958" 
+                                           max="2024" 
+                                           value="2024">
+                                    <div class="slider-track"></div>
+                                </div>
+                                <div class="range-values">
+                                    <span id="creationYearMinValue">1958</span>
+                                    <span>-</span>
+                                    <span id="creationYearMaxValue">2024</span>
+                                </div>
                             </div>
                         </div>
-            
+
                         <!-- First Album Year Filter -->
                         <div class="filter-group">
                             <h3>First Album Year</h3>
                             <div class="range-group">
-                                <label>
-                                    Year range: <span id="albumYearMin">1958</span> - <span id="albumYearValue">2024</span>
-                                </label>
-                                <input type="range" 
-                                       id="albumYearRange" 
-                                       class="range-slider"
-                                       min="1958" 
-                                       max="2024" 
-                                       value="2024">
+                                <div class="dual-range">
+                                    <input type="range" 
+                                           id="albumYearMin" 
+                                           class="range-slider min-range"
+                                           min="1958" 
+                                           max="2024" 
+                                           value="1958">
+                                    <input type="range" 
+                                           id="albumYearMax" 
+                                           class="range-slider max-range"
+                                           min="1958" 
+                                           max="2024" 
+                                           value="2024">
+                                    <div class="slider-track"></div>
+                                </div>
+                                <div class="range-values">
+                                    <span id="albumYearMinValue">1958</span>
+                                    <span>-</span>
+                                    <span id="albumYearMaxValue">2024</span>
+                                </div>
                             </div>
                         </div>
-            
+
                         <!-- Members Filter -->
                         <div class="filter-group">
                             <h3>Number of Members</h3>
@@ -121,14 +143,14 @@
                     data-creation-date="{{.CreationDate}}" 
                     data-first-album="{{.FirstAlbum}}"
                     data-members="{{len .Members}}">
-                <a href="/artist?id={{.ID}}" class="artist-link">
-                    <div class="image-container">
-                        <img src="{{.Image}}" alt="{{.Name}}" loading="lazy">
-                    </div>
-                    <div class="artist-info">
-                        <h2>{{.Name}}</h2>
-                    </div>
-                </a>
+                    <a href="/artist?id={{.ID}}" class="artist-link">
+                        <div class="image-container">
+                            <img src="{{.Image}}" alt="{{.Name}}" loading="lazy">
+                        </div>
+                        <div class="artist-info">
+                            <h2>{{.Name}}</h2>
+                        </div>
+                    </a>
                 </div>
                 {{end}}
             </div>
@@ -141,8 +163,6 @@
 
     <script src="/static/js/main.js"></script>
     <script src="/static/js/search.js"></script>
-    <script src="/static/js/filter.js"></script>
-
-    
+    <script src="/static/js/filters.js"></script>
 </body>
 </html>
