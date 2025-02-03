@@ -6,7 +6,6 @@
     <title>Groupie Tracker</title>
     <link rel="stylesheet" href="/static/css/style.css">
     <link rel="stylesheet" href="/static/css/search.css">
-    <link rel="stylesheet" href="/static/css/filter.css">
 </head>
 <body>
     <div class="container">
@@ -14,65 +13,27 @@
             <h1>GROUPIE TRACKER</h1>
             <p>Discover Artists and Their Concert History</p>
             
-            <!-- Search Form -->
+            <!-- Search form with live suggestions -->
             <form class="search-form" action="/search" method="GET">
                 <div class="search-container">
-                    <input type="text" class="search-input" name="q" placeholder="Search artists, members, locations...">
-                </div>
-            </form>
-
-            <!-- Filter Form -->
-            <form class="filter-panel" action="/filter" method="POST">
-                <!-- Creation Year Range -->
-                <div class="filter-section">
-                    <label>
-                        Creation Year:
-                        <input type="number" name="creation_min" min="1958" max="2024" value="1958">
-                        <input type="number" name="creation_max" min="1958" max="2024" value="2024">
-                    </label>
-                    
-                    <!-- First Album Range -->
-                    <label>
-                        First Album:
-                        <input type="number" name="album_min" min="1958" max="2024" value="1958">
-                        <input type="number" name="album_max" min="1958" max="2024" value="2024">
-                    </label>
-                </div>
-
-                <!-- Members Filter -->
-                <div class="filter-section members">
-                    <span>Members:</span>
-                    <div class="members-grid">
-                        {{range $i := intRange 1 9}}
-                        <label>
-                            <input type="checkbox" name="members" value="{{$i}}">{{$i}}
-                        </label>
-                        {{end}}
-                    </div>
-                </div>
-
-                <!-- Locations Filter -->
-                <div class="filter-section">
-                    <div class="locations-header">Locations</div>
-                    <div class="locations-list">
-                        {{range .Locations}}
-                        <div class="location-item">
-                            <label>
-                                <input type="checkbox" name="locations" value="{{.}}">
-                                {{.}}
-                            </label>
+                    <input type="text" 
+                           class="search-input"
+                           name="q" 
+                           placeholder="Search artists, members, locations..."
+                           autocomplete="off">
+                    <!-- Added max-height container for scrolling -->
+                    <div class="search-suggestions">
+                        <div class="suggestions-list-container">
+                            <div class="suggestions-list"></div>
                         </div>
-                        {{end}}
                     </div>
                 </div>
-
-                <button type="submit" class="apply-filters-btn">Apply Filters</button>
             </form>
         </header>
 
         <main>
             <div class="artists-grid">
-                {{range .Artists}}
+                {{range .}}
                 <div class="artist-card">
                     <a href="/artist?id={{.ID}}" class="artist-link">
                         <div class="image-container">
@@ -93,5 +54,8 @@
     </div>
 
     <script src="/static/js/main.js"></script>
+    <script src="/static/js/search.js"></script>
+
+    
 </body>
 </html>

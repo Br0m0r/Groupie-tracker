@@ -80,8 +80,6 @@
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
   z-index: 1000;
   display: none;
-  max-height: 300px;
-  overflow-y: auto;
   opacity: 0;
   transform: translateY(-10px);
   transition: all 0.2s ease;
@@ -92,10 +90,33 @@
   transform: translateY(0);
 }
 
-.suggestions-list {
+/* New container for scrollable content */
+.suggestions-list-container {
+  max-height: 400px;
+  overflow-y: auto;
   padding: 0.5rem 0;
 }
 
+/* Scrollbar Styles */
+.suggestions-list-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.suggestions-list-container::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+.suggestions-list-container::-webkit-scrollbar-thumb {
+  background: var(--primary-color);
+  border-radius: 4px;
+}
+
+.suggestions-list-container::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-dark);
+}
+
+/* Suggestion Items */
 .suggestion-item {
   padding: 0.75rem 1.25rem;
   display: flex;
@@ -188,49 +209,54 @@
 /* Search Page Specific Responsive Design */
 @media (max-width: 768px) {
   .search-page {
-      padding: 1.25rem 1rem;
+    padding: 1.25rem 1rem;
   }
 
   .search-form {
-      flex-direction: column;
-      width: 90%;
+    flex-direction: column;
+    width: 90%;
   }
 
   .search-title {
-      font-size: 2.5rem;
+    font-size: 2.5rem;
   }
 
   .result-item {
-      flex-direction: column;
-      gap: 0.75rem;
-      text-align: center;
-      padding: 1rem;
+    flex-direction: column;
+    gap: 0.75rem;
+    text-align: center;
+    padding: 1rem;
   }
 
   .suggestion-item {
-      flex-direction: column;
-      gap: 0.5rem;
-      text-align: center;
+    flex-direction: column;
+    gap: 0.5rem;
+    text-align: center;
   }
 }
 
 @media (max-width: 480px) {
   .search-title {
-      font-size: 2rem;
+    font-size: 2rem;
   }
 
   .search-input {
-      font-size: 0.9rem;
-      padding: 0.75rem 1rem;
+    font-size: 0.9rem;
+    padding: 0.75rem 1rem;
   }
 
   .suggestion-item {
-      padding: 0.75rem 1rem;
+    padding: 0.75rem 1rem;
   }
 
   .result-type,
   .suggestion-type {
-      font-size: 0.8rem;
-      padding: 0.25rem 0.75rem;
+    font-size: 0.8rem;
+    padding: 0.25rem 0.75rem;
+  }
+
+  /* Adjust scrollbar size for mobile */
+  .suggestions-list-container::-webkit-scrollbar {
+    width: 6px;
   }
 }

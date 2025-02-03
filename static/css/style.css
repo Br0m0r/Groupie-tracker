@@ -1,8 +1,9 @@
 /* 
-* Global Styles and Variables
-* Main stylesheet containing base styles, variables, and common components
-*/
+ * Global Styles and Variables
+ * Main stylesheet containing base styles, variables, and common components
+ */
 
+/* CSS Variables */
 :root {
   --primary-color: #45b7d1;
   --primary-dark: #3a9fb5;
@@ -14,6 +15,7 @@
   --transition-standard: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* Reset Styles */
 * {
   margin: 0;
   padding: 0;
@@ -21,6 +23,7 @@
   font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
 }
 
+/* Base Layout */
 body {
   background: var(--background-color);
   min-height: 100vh;
@@ -38,6 +41,7 @@ body {
   z-index: 1;
 }
 
+/* Header Styles */
 header {
   margin-bottom: 3rem;
   text-align: center;
@@ -74,6 +78,7 @@ header p {
   margin-top: 1rem;
 }
 
+/* Artist Grid - Homepage */
 .artists-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -139,6 +144,7 @@ header p {
   color: var(--primary-color);
 }
 
+/* Common Components */
 .back-button {
   display: inline-flex;
   align-items: center;
@@ -157,6 +163,7 @@ header p {
   box-shadow: 0 4px 12px rgba(69, 183, 209, 0.3);
 }
 
+/* Footer */
 footer {
   text-align: center;
   color: var(--text-light);
@@ -164,6 +171,7 @@ footer {
   margin-top: 2.5rem;
 }
 
+/* Background Animation */
 .background-animation {
   position: fixed;
   top: 0;
@@ -193,118 +201,7 @@ footer {
   will-change: transform;
 }
 
-/* Filter Panel Styles */
-.filter-panel {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 0.5rem;
-  padding: 0.75rem;
-  margin: 0.75rem auto;
-  max-width: 650px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.filter-section {
-  margin-bottom: 0.5rem;
-  padding-bottom: 0.5rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  color: var(--text-light);
-}
-
-.filter-section:last-child {
-  margin-bottom: 0;
-  border-bottom: none;
-  padding-bottom: 0;
-}
-
-.filter-section label {
-  display: block;
-  margin-bottom: 0.25rem;
-  font-size: 0.85rem;
-}
-
-.filter-section input[type="range"] {
-  width: 100%;
-  margin: 0.25rem 0;
-  accent-color: var(--primary-color);
-  height: 4px;
-}
-
-.members-grid {
-  display: grid;
-  grid-template-columns: repeat(8, 1fr);
-  gap: 0.25rem;
-  margin-top: 0.25rem;
-}
-
-.members-grid label {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  font-size: 0.85rem;
-}
-
-.members-grid input[type="checkbox"] {
-  width: 14px;
-  height: 14px;
-  accent-color: var(--primary-color);
-}
-
-.locations-header {
-  cursor: pointer;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 0.85rem;
-}
-
-.locations-list {
-  max-height: 120px;
-  overflow-y: auto;
-  margin-top: 0.25rem;
-  padding: 0.25rem;
-  background: rgba(255, 255, 255, 0.03);
-  border-radius: 0.25rem;
-}
-
-.location-item {
-  padding: 0.15rem;
-}
-
-.location-item label {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  font-size: 0.85rem;
-}
-
-.location-item input[type="checkbox"] {
-  width: 14px;
-  height: 14px;
-  accent-color: var(--primary-color);
-}
-
-.toggle-icon {
-  color: var(--primary-color);
-  transition: transform 0.3s ease;
-}
-
-.apply-filters-btn {
-  width: 100%;
-  background: var(--primary-color);
-  color: white;
-  border: none;
-  padding: 0.5rem;
-  border-radius: 0.25rem;
-  cursor: pointer;
-  font-size: 0.85rem;
-  margin-top: 0.5rem;
-  transition: background 0.2s;
-}
-
-.apply-filters-btn:hover {
-  background: var(--primary-dark);
-}
-
+/* Animations */
 @keyframes float {
   0% {
       transform: translate(0, 0) rotate(0deg);
@@ -334,6 +231,7 @@ footer {
   }
 }
 
+/* Responsive Design */
 @media (max-width: 768px) {
   .container {
       padding: 1rem;
@@ -346,10 +244,6 @@ footer {
   
   header h1 {
       font-size: 2rem;
-  }
-
-  .members-grid {
-      grid-template-columns: repeat(4, 1fr);
   }
 }
 

@@ -18,10 +18,7 @@ func SearchHandler(w http.ResponseWriter, r *http.Request) {
 	// Handle AJAX requests for search suggestions
 	if r.Header.Get("X-Requested-With") == "XMLHttpRequest" {
 		results := searchAllData(query)
-		// Limit suggestions to 5 items
-		if len(results) > 5 {
-			results = results[:5]
-		}
+		// Remove the limit of 5 items
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(results)
 		return
@@ -135,7 +132,7 @@ func searchAllData(query string) []models.SearchResult {
 
 		// Creation date search - only for non-single letter queries
 		if !isSingleLetter {
-			creationStr := fmt.Sprintf("%d", artist.CreationDate)
+			creationStr := fmt.Sprintf("%d", artist.CreationDate) // creation date is int so convert to string
 			if strings.Contains(creationStr, query) {
 				dateResults = append(dateResults, models.SearchResult{
 					Text:        fmt.Sprintf("%s (%d)", artist.Name, artist.CreationDate),
