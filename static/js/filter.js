@@ -1,146 +1,194 @@
-// static/js/filters.js
 document.addEventListener('DOMContentLoaded', () => {
-    // Get all required elements
-    const filterForm = document.getElementById('filterForm');
-    const resetButton = document.getElementById('resetFilters');
+    const filterToggle = document.querySelector('.filter-toggle');
+    const filterContent = document.querySelector('.filter-content');
+    const applyFiltersBtn = document.getElementById('applyFilters');
+    const resetFiltersBtn = document.getElementById('resetFilters');
+    const locationSearch = document.getElementById('locationSearch');
     
-    // Range sliders elements
-    const creationYearMin = document.getElementById('creationYearMin');
-    const creationYearMax = document.getElementById('creationYearMax');
-    const creationYearMinValue = document.getElementById('creationYearMinValue');
-    const creationYearMaxValue = document.getElementById('creationYearMaxValue');
-    const albumYearMin = document.getElementById('albumYearMin');
-    const albumYearMax = document.getElementById('albumYearMax');
-    const albumYearMinValue = document.getElementById('albumYearMinValue');
-    const albumYearMaxValue = document.getElementById('albumYearMaxValue');
-    const memberCheckboxes = document.querySelectorAll('.checkbox-wrapper input[type="checkbox"]');
-
-    // Handle range slider changes
-    creationYearMin.addEventListener('input', () => {
-        creationYearMinValue.textContent = creationYearMin.value;
-        if (parseInt(creationYearMin.value) > parseInt(creationYearMax.value)) {
-            creationYearMax.value = creationYearMin.value;
-            creationYearMaxValue.textContent = creationYearMin.value;
+    // Initial state - hidden
+    filterContent.style.display = 'none';
+    
+    // Show/Hide filters
+    filterToggle.addEventListener('click', () => {
+        const isHidden = filterContent.style.display === 'none';
+        filterContent.style.display = isHidden ? 'block' : 'none';
+        filterToggle.textContent = isHidden ? 'Hide Filters' : 'Show Filters';
+        
+        if (isHidden) {
+            setTimeout(() => filterContent.classList.add('active'), 10);
+        } else {
+            filterContent.classList.remove('active');
         }
     });
 
-    creationYearMax.addEventListener('input', () => {
-        creationYearMaxValue.textContent = creationYearMax.value;
-        if (parseInt(creationYearMax.value) < parseInt(creationYearMin.value)) {
-            creationYearMin.value = creationYearMax.value;
-            creationYearMinValue.textContent = creationYearMax.value;
-        }
+    // Range input value display updates
+    const creationStartInput = document.getElementById('creationDateStart');
+    const creationEndInput = document.getElementById('creationDateEnd');
+    const albumStartInput = document.getElementById('firstAlbumStart');
+    const albumEndInput = document.getElementById('firstAlbumEnd');
+
+    // Update displayed values when range inputs change
+    creationStartInput.addEventListener('input', () => {
+        document.getElementById('creationStartValue').textContent = creationStartInput.value;
     });
 
-    albumYearMin.addEventListener('input', () => {
-        albumYearMinValue.textContent = albumYearMin.value;
-        if (parseInt(albumYearMin.value) > parseInt(albumYearMax.value)) {
-            albumYearMax.value = albumYearMin.value;
-            albumYearMaxValue.textContent = albumYearMin.value;
-        }
+    creationEndInput.addEventListener('input', () => {
+        document.getElementById('creationEndValue').textContent = creationEndInput.value;
     });
 
-    albumYearMax.addEventListener('input', () => {
-        albumYearMaxValue.textContent = albumYearMax.value;
-        if (parseInt(albumYearMax.value) < parseInt(albumYearMin.value)) {
-            albumYearMin.value = albumYearMax.value;
-            albumYearMinValue.textContent = albumYearMax.value;
-        }
+    albumStartInput.addEventListener('input', () => {
+        document.getElementById('albumStartValue').textContent = albumStartInput.value;
+    });
+
+    albumEndInput.addEventListener('input', () => {
+        document.getElementById('albumEndValue').textContent = albumEndInput.value;
+    });
+
+    // Location search functionality
+    locationSearch.addEventListener('input', (e) => {
+        const searchValue = e.target.value.toLowerCase();
+        const locationCheckboxes = document.querySelectorAll('#locationFilter label');
+        
+        locationCheckboxes.forEach(label => {
+            const labelText = label.textContent.toLowerCase();
+            label.style.display = labelText.includes(searchValue) ? '' : 'none';
+        });
+    });
+
+    // Apply filters
+    applyFiltersBtn.addEventListener('click', () => {
+        const filters = {
+            creationStart: parseInt(creationStartInput.value),
+            creationEnd: parseInt(creationEndInput.value),
+            albumStart: parseInt(albumStartInput.value),
+            albumEnd: parseInt(albumEndInput.value),
+            members: Array.from(document.querySelectorAll('input[name="members"]:checked'))
+                        .map(cb => parseInt(cb.value)),
+            locations: Array.from(document.querySelectorAll('input[name="locations"]:checked'))
+                        .map(cb => cb.value)
+        };
+
+        // Send filter request
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', '/', true);
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+
+        xhr.onload = function() {
+            if (xhr.status === 200) {
+                try {
+                    const response = JSON.parse(xhr.responseText);
+                    updateArtistsGrid(response.artists);
+                    document.getElementById('resultCount').textContent = response.artists.length;
+                } catch (error) {
+                    console.error('Error parsing response:', error);
+                }
+            } else {
+                console.error('Filter request failed:', xhr.status);
+            }
+        };
+
+        xhr.onerror = function() {
+            console.error('Filter request failed');
+        };
+
+        xhr.send(JSON.stringify(filters));
     });
 
     // Reset filters
-    resetButton.addEventListener('click', (e) => {
-        e.preventDefault();
-        filterForm.reset();
+    resetFiltersBtn.addEventListener('click', () => {
+        // Reset range inputs
+        creationStartInput.value = '1950';
+        creationEndInput.value = '2024';
+        albumStartInput.value = '1950';
+        albumEndInput.value = '2024';
         
-        // Reset values
-        creationYearMin.value = "1958";
-        creationYearMax.value = "2024";
-        albumYearMin.value = "1958";
-        albumYearMax.value = "2024";
+        // Update displayed values
+        document.getElementById('creationStartValue').textContent = '1950';
+        document.getElementById('creationEndValue').textContent = '2024';
+        document.getElementById('albumStartValue').textContent = '1950';
+        document.getElementById('albumEndValue').textContent = '2024';
         
-        // Reset displayed values
-        creationYearMinValue.textContent = "1958";
-        creationYearMaxValue.textContent = "2024";
-        albumYearMinValue.textContent = "1958";
-        albumYearMaxValue.textContent = "2024";
+        // Clear location search
+        locationSearch.value = '';
         
-        applyFilters();
-    });
-
-    // Handle form submission
-    filterForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        applyFilters();
-    });
-
-    function applyFilters() {
-        const filterData = {
-            creationYearMin: parseInt(creationYearMin.value),
-            creationYearMax: parseInt(creationYearMax.value),
-            albumYearMin: parseInt(albumYearMin.value),
-            albumYearMax: parseInt(albumYearMax.value),
-            members: Array.from(memberCheckboxes)
-                .filter(cb => cb.checked)
-                .map(cb => parseInt(cb.value))
-        };
-
-        fetch('/filter', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(filterData)
-        })
-        .then(response => response.json())
-        .then(artists => {
-            const grid = document.querySelector('.artists-grid');
-            grid.innerHTML = ''; // Clear current artists
-            
-            if (artists.length === 0) {
-                // Show no results message
-                const noResults = document.createElement('div');
-                noResults.className = 'no-results';
-                noResults.textContent = 'No artists found matching your filters';
-                grid.appendChild(noResults);
-            } else {
-                // Create and add artist cards
-                artists.forEach(artist => {
-                    const card = createArtistCard(artist);
-                    grid.appendChild(card);
-                });
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            const grid = document.querySelector('.artists-grid');
-            grid.innerHTML = '<div class="error-message">Error loading artists</div>';
+        // Show all location checkboxes
+        document.querySelectorAll('#locationFilter label').forEach(label => {
+            label.style.display = '';
         });
-    }
-
-    function createArtistCard(artist) {
-        const card = document.createElement('div');
-        card.className = 'artist-card';
-        card.dataset.creationDate = artist.CreationDate;
-        card.dataset.firstAlbum = artist.FirstAlbum;
-        card.dataset.members = artist.Members.length;
-
-        card.innerHTML = `
-            <a href="/artist?id=${artist.ID}" class="artist-link">
-                <div class="image-container">
-                    <img src="${artist.Image}" alt="${artist.Name}" loading="lazy">
-                </div>
-                <div class="artist-info">
-                    <h2>${artist.Name}</h2>
-                </div>
-            </a>
-        `;
-
-        // Add animation
-        setTimeout(() => {
-            card.style.animation = 'fadeInUp 0.6s ease forwards';
-        }, 0);
-
-        return card;
-    }
+        
+        // Uncheck all checkboxes
+        document.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+            cb.checked = false;
+        });
+        
+        // Apply filters to reset view
+        document.getElementById('applyFilters').click();
+    });
 });
+
+// Helper function to update the artists grid
+function updateArtistsGrid(artists) {
+    const artistsGrid = document.querySelector('.artists-grid');
+    
+    console.log('Updating grid with artists:', artists); // Debug log
+
+    if (!artists || artists.length === 0) {
+        artistsGrid.innerHTML = '<div class="no-results">No artists found matching your filters</div>';
+        return;
+    }
+
+    const html = artists.map(artist => {
+        console.log('Processing artist:', artist); // Debug individual artist
+        return `
+            <div class="artist-card">
+                <a href="/artist?id=${artist.ID || artist.id}" class="artist-link">
+                    <div class="image-container">
+                        <img src="${artist.Image || artist.image}" alt="${artist.Name || artist.name}">
+                    </div>
+                    <div class="artist-info">
+                        <h2>${artist.Name || artist.name}</h2>
+                    </div>
+                </a>
+            </div>
+        `;
+    }).join('');
+
+    console.log('Generated HTML:', html); // Debug generated HTML
+    artistsGrid.innerHTML = html;
+}
+
+function applyFilters() {
+    const filters = {
+        creationStart: parseInt(document.getElementById('creationDateStart').value),
+        creationEnd: parseInt(document.getElementById('creationDateEnd').value),
+        albumStart: parseInt(document.getElementById('firstAlbumStart').value),
+        albumEnd: parseInt(document.getElementById('firstAlbumEnd').value),
+        members: Array.from(document.querySelectorAll('input[name="members"]:checked'))
+                    .map(cb => parseInt(cb.value)),
+        locations: Array.from(document.querySelectorAll('input[name="locations"]:checked'))
+                    .map(cb => cb.value)
+    };
+
+    // Send filter request
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', '/', true);
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+
+    xhr.onload = function() {
+        if (xhr.status === 200) {
+            try {
+                const response = JSON.parse(xhr.responseText);
+                if (response && response.artists) {
+                    updateArtistsGrid(response.artists);
+                    document.getElementById('resultCount').textContent = response.artists.length;
+                }
+            } catch (error) {
+                console.error('Error parsing response:', error);
+            }
+        }
+    };
+
+    xhr.send(JSON.stringify(filters));
+}
