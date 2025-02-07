@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"strconv"
 
-	"groupie/models"
 	"groupie/store"
 )
 
@@ -18,18 +17,12 @@ func Initialize(ds *store.DataStore) {
 	dataStore = ds
 }
 
-type HomePageData struct {
-	Artists   []models.Artist
-	Locations []string // Unique locations for filter dropdown
-}
-
+// HomeHandler serves the main page with artist listings
 func HomeHandler(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/" {
 		ErrorHandler(w, ErrNotFound, "Page not exist")
 		return
 	}
-
-	artists := dataStore.GetAllArtists()
 
 	tmpl, err := template.ParseFiles("templates/index.html")
 	if err != nil {
@@ -37,7 +30,7 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = tmpl.Execute(w, artists) // Pass artists directly
+	err = tmpl.Execute(w, dataStore.GetArtistCards())
 	if err != nil {
 		ErrorHandler(w, ErrInternalServer, "Failed to execute template")
 		return

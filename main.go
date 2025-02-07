@@ -24,7 +24,6 @@ func setupServer() *http.ServeMux {
 	mux.HandleFunc("/", handlers.HomeHandler)
 	mux.HandleFunc("/artist", handlers.ArtistHandler)
 	mux.HandleFunc("/search", handlers.SearchHandler)
-	mux.HandleFunc("/filter", handlers.FilterHandler)
 
 	// Static file handling
 	fileServer := http.FileServer(http.Dir("static"))
