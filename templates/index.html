@@ -32,31 +32,53 @@
                     </div>
                 </div>
 
-                <!-- Creation Date Range -->
-                <div class="filter-section">
+                 <!-- Creation Date Range -->
+                 <div class="filter-section">
                     <h3>Creation Date</h3>
-                    <div class="range-inputs">
-                        <input type="number" name="creation_start" 
-                               value="{{.SelectedFilters.CreationStart}}" 
-                               min="1950" max="2024" placeholder="From">
-                        <span>to</span>
-                        <input type="number" name="creation_end" 
-                               value="{{.SelectedFilters.CreationEnd}}" 
-                               min="1950" max="2024" placeholder="To">
+                    <div class="range-slider">
+                        <div class="range-values">
+                            <span id="creation-start-value">1950</span>
+                            <span id="creation-end-value">2024</span>
+                        </div>
+                        <div class="range-inputs">
+                            <input type="range" 
+                                   name="creation_start" 
+                                   min="1950" 
+                                   max="2024" 
+                                   value="{{.SelectedFilters.CreationStart}}"
+                                   class="range creation-start">
+                            <input type="range" 
+                                   name="creation_end" 
+                                   min="1950" 
+                                   max="2024" 
+                                   value="{{.SelectedFilters.CreationEnd}}"
+                                   class="range creation-end">
+                        </div>
                     </div>
                 </div>
 
                 <!-- First Album Year Range -->
                 <div class="filter-section">
                     <h3>First Album Year</h3>
-                    <div class="range-inputs">
-                        <input type="number" name="album_start" 
-                               value="{{.SelectedFilters.AlbumStartYear}}" 
-                               min="1950" max="2024" placeholder="From">
-                        <span>to</span>
-                        <input type="number" name="album_end" 
-                               value="{{.SelectedFilters.AlbumEndYear}}" 
-                               min="1950" max="2024" placeholder="To">
+                    <div class="range-slider">
+                        <div class="range-values">
+                            <span id="album-start-value">1950</span>
+                            <span id="album-end-value">2024</span>
+                        </div>
+                        <div class="range-inputs">
+                            <input type="range" 
+                                   name="album_start" 
+                                   min="1950" 
+                                   max="2024" 
+                                   value="{{.SelectedFilters.AlbumStartYear}}"
+                                   class="range album-start">
+                            <input type="range" 
+                                   name="album_end" 
+                                   min="1950" 
+                                   max="2024" 
+                                   value="{{.SelectedFilters.AlbumEndYear}}"
+                                   class="range album-end">
+                        </div>
                     </div>
                 </div>
 

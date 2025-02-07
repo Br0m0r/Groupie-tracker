@@ -186,3 +186,80 @@
         max-height: 150px;
     }
 }
+/* Range Slider Styles */
+.range-slider {
+    position: relative;
+    width: 100%;
+    padding: 0.5rem 0;
+}
+
+.range-values {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+    color: var(--text-light);
+}
+
+.range-inputs {
+    position: relative;
+    height: 30px;
+}
+
+.range-inputs .range {
+    position: absolute;
+    width: 100%;
+    pointer-events: none;
+    appearance: none;
+    height: 2px;
+    background: none;
+    opacity: 0.5;
+}
+
+.range-inputs .range::-webkit-slider-thumb {
+    pointer-events: auto;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--primary-color);
+    cursor: pointer;
+    border: 2px solid white;
+    transition: all 0.2s ease;
+}
+
+.range-inputs .range::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+}
+
+.range-inputs .range::-moz-range-thumb {
+    pointer-events: auto;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--primary-color);
+    cursor: pointer;
+    border: 2px solid white;
+    transition: all 0.2s ease;
+}
+
+.range-inputs .range::-moz-range-thumb:hover {
+    transform: scale(1.2);
+}
+
+/* Track styling */
+.range-inputs .range::-webkit-slider-runnable-track {
+    height: 2px;
+    background: var(--primary-color);
+}
+
+.range-inputs .range::-moz-range-track {
+    height: 2px;
+    background: var(--primary-color);
+}
+
+/* Active state */
+.range-inputs .range:active::-webkit-slider-thumb {
+    transform: scale(1.2);
+    background: var(--primary-dark);
+}
