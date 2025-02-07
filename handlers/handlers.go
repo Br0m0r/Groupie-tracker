@@ -24,14 +24,69 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	tmpl, err := template.ParseFiles("templates/index.html")
+	// Get all artists for unique locations
+	allArtists := dataStore.GetAllArtists()
+
+	// Prepare data for template including filter data
+	data := FilterData{
+		Artists:         dataStore.GetArtistCards(),
+		UniqueLocations: getUniqueLocations(allArtists),
+		SelectedFilters: FilterParams{
+			CreationStart:  1950,
+			CreationEnd:    2024,
+			AlbumStartYear: 1950,
+			AlbumEndYear:   2024,
+			MemberCounts:   []int{},    // Empty slice for initial state
+			Locations:      []string{}, // Empty slice for initial state
+		},
+		TotalResults: len(dataStore.GetArtistCards()),
+	}
+
+	// Define template functions
+	funcMap := template.FuncMap{
+		"iterate": func(start, end int) []int {
+			var result []int
+			for i := start; i <= end; i++ {
+				result = append(result, i)
+			}
+			return result
+		},
+		"contains": func(slice interface{}, item interface{}) bool {
+			switch slice := slice.(type) {
+			case []int:
+				itemInt, ok := item.(int)
+				if !ok {
+					return false
+				}
+				for _, s := range slice {
+					if s == itemInt {
+						return true
+					}
+				}
+			case []string:
+				itemStr, ok := item.(string)
+				if !ok {
+					return false
+				}
+				for _, s := range slice {
+					if s == itemStr {
+						return true
+					}
+				}
+			}
+			return false
+		},
+	}
+
+	// Parse template with functions
+	tmpl, err := template.New("index.html").Funcs(funcMap).ParseFiles("templates/index.html")
 	if err != nil {
 		ErrorHandler(w, ErrInternalServer, "Failed to load template")
 		return
 	}
 
-	err = tmpl.Execute(w, dataStore.GetArtistCards())
-	if err != nil {
+	// Execute template with data
+	if err := tmpl.Execute(w, data); err != nil {
 		ErrorHandler(w, ErrInternalServer, "Failed to execute template")
 		return
 	}

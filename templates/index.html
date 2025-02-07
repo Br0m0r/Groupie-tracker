@@ -6,9 +6,78 @@
     <title>Groupie Tracker</title>
     <link rel="stylesheet" href="/static/css/style.css">
     <link rel="stylesheet" href="/static/css/search.css">
+    <link rel="stylesheet" href="/static/css/filter.css">
+
 </head>
 <body>
     <div class="container">
+        <div class="filter-panel">
+            <div class="filter-header">
+                <h2>Filters</h2>
+                <button type="reset" form="filter-form" class="clear-filters">Clear All</button>
+            </div>
+            
+            <form id="filter-form" action="/filter" method="GET">
+                <!-- Member Count Filter -->
+                <div class="filter-section">
+                    <h3>Number of Members</h3>
+                    <div class="checkbox-group">
+                        {{range $i := iterate 1 8}}
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="members_{{$i}}" value="{{$i}}"
+                                {{if contains $.SelectedFilters.MemberCounts $i}}checked{{end}}>
+                            {{if eq $i 8}}8+{{else}}{{$i}}{{end}} member{{if ne $i 1}}s{{end}}
+                        </label>
+                        {{end}}
+                    </div>
+                </div>
+
+                <!-- Creation Date Range -->
+                <div class="filter-section">
+                    <h3>Creation Date</h3>
+                    <div class="range-inputs">
+                        <input type="number" name="creation_start" 
+                               value="{{.SelectedFilters.CreationStart}}" 
+                               min="1950" max="2024" placeholder="From">
+                        <span>to</span>
+                        <input type="number" name="creation_end" 
+                               value="{{.SelectedFilters.CreationEnd}}" 
+                               min="1950" max="2024" placeholder="To">
+                    </div>
+                </div>
+
+                <!-- First Album Year Range -->
+                <div class="filter-section">
+                    <h3>First Album Year</h3>
+                    <div class="range-inputs">
+                        <input type="number" name="album_start" 
+                               value="{{.SelectedFilters.AlbumStartYear}}" 
+                               min="1950" max="2024" placeholder="From">
+                        <span>to</span>
+                        <input type="number" name="album_end" 
+                               value="{{.SelectedFilters.AlbumEndYear}}" 
+                               min="1950" max="2024" placeholder="To">
+                    </div>
+                </div>
+
+                <!-- Locations Filter -->
+                <div class="filter-section">
+                    <h3>Concert Locations</h3>
+                    
+                    <div class="checkbox-group scrollable">
+                        {{range .UniqueLocations}}
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="location" value="{{.}}"
+                                {{if contains $.SelectedFilters.Locations .}}checked{{end}}>
+                            {{.}}
+                        </label>
+                        {{end}}
+                    </div>
+                </div>
+
+                <button type="submit" class="apply-filters">Apply Filters</button>
+            </form>
+        </div>
         <header>
             <h1>GROUPIE TRACKER</h1>
             <p>Discover Artists and Their Concert History</p>
@@ -29,11 +98,12 @@
                     </div>
                 </div>
             </form>
+
         </header>
 
         <main>
             <div class="artists-grid">
-                {{range .}}
+                {{range .Artists}}
                 <div class="artist-card">
                     <a href="/artist?id={{.ID}}" class="artist-link">
                         <div class="image-container">
@@ -52,10 +122,8 @@
             <p>© 2024 Groupie Tracker. All rights reserved.</p>
         </footer>
     </div>
-
     <script src="/static/js/main.js"></script>
     <script src="/static/js/search.js"></script>
-
-    
+    <script src="/static/js/filter.js"></script>
 </body>
 </html>

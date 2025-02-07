@@ -1,0 +1,188 @@
+/* 
+ * Filter Panel Styles
+ * Contains styles for the filter sidebar and its components
+ */
+
+/* Filter Panel Layout */
+.filter-panel {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    width: 300px;
+    position: fixed;
+    left: 2rem;
+    top: 2rem;
+    bottom: 2rem;
+    overflow-y: auto;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text-light);
+}
+
+/* Filter Header */
+.filter-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.filter-header h2 {
+    font-size: 1.5rem;
+    color: var(--primary-color);
+    margin: 0;
+}
+
+/* Filter Sections */
+.filter-section {
+    margin-bottom: 2rem;
+}
+
+.filter-section h3 {
+    font-size: 1rem;
+    color: white;
+    margin-bottom: 1rem;
+}
+
+/* Checkbox Styles */
+.checkbox-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    transition: background-color 0.2s;
+}
+
+.checkbox-label:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* Range Inputs */
+.range-inputs {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.range-inputs input {
+    width: 100px;
+    padding: 0.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 0.5rem;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+.range-inputs span {
+    color: var(--text-light);
+}
+
+/* Location Search */
+.location-search {
+    margin-bottom: 1rem;
+}
+
+.location-search-input {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 0.5rem;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+/* Scrollable Location List */
+.checkbox-group.scrollable {
+    max-height: 200px;
+    overflow-y: auto;
+    padding-right: 0.5rem;
+}
+
+/* Custom Scrollbar */
+.checkbox-group.scrollable::-webkit-scrollbar {
+    width: 6px;
+}
+
+.checkbox-group.scrollable::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+}
+
+.checkbox-group.scrollable::-webkit-scrollbar-thumb {
+    background: var(--primary-color);
+    border-radius: 3px;
+}
+
+/* Buttons */
+.clear-filters,
+.apply-filters {
+    padding: 0.5rem 1rem;
+    border-radius: 2rem;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.clear-filters {
+    background: transparent;
+    color: var(--text-light);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.clear-filters:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.apply-filters {
+    width: 100%;
+    background: var(--primary-color);
+    color: white;
+    margin-top: 1rem;
+}
+
+.apply-filters:hover {
+    background: var(--primary-dark);
+    transform: translateY(-2px);
+}
+
+/* Adjust main content for filter panel */
+.container {
+    padding-left: calc(300px + 4rem); /* filter panel width + spacing */
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .filter-panel {
+        position: static;
+        width: 100%;
+        margin-bottom: 2rem;
+    }
+
+    .container {
+        padding-left: 2rem;
+    }
+
+    .range-inputs input {
+        width: calc(50% - 1rem);
+    }
+}
+
+@media (max-width: 768px) {
+    .filter-panel {
+        padding: 1rem;
+    }
+
+    .checkbox-group.scrollable {
+        max-height: 150px;
+    }
+}
