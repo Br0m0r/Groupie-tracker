@@ -59,9 +59,6 @@ func FilterHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Debug: Print all form values
-	fmt.Printf("Received form data: %+v\n", r.Form)
-
 	// Get all filter parameters
 	params := FilterParams{
 		MemberCounts:   getMemberCounts(r),
@@ -72,15 +69,9 @@ func FilterHandler(w http.ResponseWriter, r *http.Request) {
 		AlbumEndYear:   parseIntDefault(r.FormValue("album_end"), 2024),
 	}
 
-	// Debug: Print parsed parameters
-	fmt.Printf("Parsed filter params: %+v\n", params)
-
 	// Get all artists and apply filters
 	allArtists := dataStore.GetAllArtists()
 	filteredArtists := filterArtists(allArtists, params)
-
-	// Debug: Print counts
-	fmt.Printf("Total artists: %d, Filtered artists: %d\n", len(allArtists), len(filteredArtists))
 
 	// Prepare data for template
 	data := FilterData{
@@ -190,9 +181,6 @@ func filterArtists(artists []models.Artist, params FilterParams) []models.Artist
 
 // matchesFilters checks if an artist matches all filter criteria
 func matchesFilters(artist models.Artist, params FilterParams) bool {
-	// Debug print
-	fmt.Printf("Checking artist %s against filters\n", artist.Name)
-
 	// Check member count
 	if len(params.MemberCounts) > 0 {
 		memberCount := len(artist.Members)
@@ -207,14 +195,12 @@ func matchesFilters(artist models.Artist, params FilterParams) bool {
 			}
 		}
 		if !found {
-			fmt.Printf("Artist %s filtered out by member count\n", artist.Name)
 			return false
 		}
 	}
 
 	// Check creation date range
 	if artist.CreationDate < params.CreationStart || artist.CreationDate > params.CreationEnd {
-		fmt.Printf("Artist %s filtered out by creation date\n", artist.Name)
 		return false
 	}
 
@@ -233,7 +219,6 @@ func matchesFilters(artist models.Artist, params FilterParams) bool {
 			}
 		}
 		if !found {
-			fmt.Printf("Artist %s filtered out by location\n", artist.Name)
 			return false
 		}
 	}
@@ -241,11 +226,9 @@ func matchesFilters(artist models.Artist, params FilterParams) bool {
 	// Check first album year
 	albumYear := extractYear(artist.FirstAlbum)
 	if albumYear < params.AlbumStartYear || albumYear > params.AlbumEndYear {
-		fmt.Printf("Artist %s filtered out by album year\n", artist.Name)
 		return false
 	}
 
-	fmt.Printf("Artist %s passed all filters\n", artist.Name)
 	return true
 }
 

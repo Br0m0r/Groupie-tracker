@@ -11,95 +11,6 @@
 </head>
 <body>
     <div class="container">
-        <div class="filter-panel">
-            <div class="filter-header">
-                <h2>Filters</h2>
-                <button type="reset" form="filter-form" class="clear-filters">Clear All</button>
-            </div>
-            
-            <form id="filter-form" action="/filter" method="GET">
-                <!-- Member Count Filter -->
-                <div class="filter-section">
-                    <h3>Number of Members</h3>
-                    <div class="checkbox-group">
-                        {{range $i := iterate 1 8}}
-                        <label class="checkbox-label">
-                            <input type="checkbox" name="members_{{$i}}" value="{{$i}}"
-                                {{if contains $.SelectedFilters.MemberCounts $i}}checked{{end}}>
-                            {{if eq $i 8}}8+{{else}}{{$i}}{{end}} member{{if ne $i 1}}s{{end}}
-                        </label>
-                        {{end}}
-                    </div>
-                </div>
-
-                 <!-- Creation Date Range -->
-                 <div class="filter-section">
-                    <h3>Creation Date</h3>
-                    <div class="range-slider">
-                        <div class="range-values">
-                            <span id="creation-start-value">1950</span>
-                            <span id="creation-end-value">2024</span>
-                        </div>
-                        <div class="range-inputs">
-                            <input type="range" 
-                                   name="creation_start" 
-                                   min="1950" 
-                                   max="2024" 
-                                   value="{{.SelectedFilters.CreationStart}}"
-                                   class="range creation-start">
-                            <input type="range" 
-                                   name="creation_end" 
-                                   min="1950" 
-                                   max="2024" 
-                                   value="{{.SelectedFilters.CreationEnd}}"
-                                   class="range creation-end">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- First Album Year Range -->
-                <div class="filter-section">
-                    <h3>First Album Year</h3>
-                    <div class="range-slider">
-                        <div class="range-values">
-                            <span id="album-start-value">1950</span>
-                            <span id="album-end-value">2024</span>
-                        </div>
-                        <div class="range-inputs">
-                            <input type="range" 
-                                   name="album_start" 
-                                   min="1950" 
-                                   max="2024" 
-                                   value="{{.SelectedFilters.AlbumStartYear}}"
-                                   class="range album-start">
-                            <input type="range" 
-                                   name="album_end" 
-                                   min="1950" 
-                                   max="2024" 
-                                   value="{{.SelectedFilters.AlbumEndYear}}"
-                                   class="range album-end">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Locations Filter -->
-                <div class="filter-section">
-                    <h3>Concert Locations</h3>
-                    
-                    <div class="checkbox-group scrollable">
-                        {{range .UniqueLocations}}
-                        <label class="checkbox-label">
-                            <input type="checkbox" name="location" value="{{.}}"
-                                {{if contains $.SelectedFilters.Locations .}}checked{{end}}>
-                            {{.}}
-                        </label>
-                        {{end}}
-                    </div>
-                </div>
-
-                <button type="submit" class="apply-filters">Apply Filters</button>
-            </form>
-        </div>
         <header>
             <h1>GROUPIE TRACKER</h1>
             <p>Discover Artists and Their Concert History</p>
@@ -112,7 +23,6 @@
                            name="q" 
                            placeholder="Search artists, members, locations..."
                            autocomplete="off">
-                    <!-- Added max-height container for scrolling -->
                     <div class="search-suggestions">
                         <div class="suggestions-list-container">
                             <div class="suggestions-list"></div>
@@ -121,21 +31,113 @@
                 </div>
             </form>
 
+            <!-- Filter Panel -->
+            <div class="filter-panel">
+                <form id="filter-form" action="/filter" method="GET">
+                    <div class="filters-container">
+                        <!-- Member Count Filter -->
+                        <div class="filter-box members-box">
+                            <h3>Number of Members</h3>
+                            <div class="members-columns">
+                                <div class="members-column">
+                                    {{range $i := iterate 1 4}}
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" name="members_{{$i}}" value="{{$i}}"
+                                            {{if contains $.SelectedFilters.MemberCounts $i}}checked{{end}}>
+                                        {{if eq $i 8}}8+{{else}}{{$i}}{{end}}
+                                    </label>
+                                    {{end}}
+                                </div>
+                                <div class="members-column">
+                                    {{range $i := iterate 5 8}}
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" name="members_{{$i}}" value="{{$i}}"
+                                            {{if contains $.SelectedFilters.MemberCounts $i}}checked{{end}}>
+                                        {{if eq $i 8}}8+{{else}}{{$i}}{{end}}
+                                    </label>
+                                    {{end}}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Creation Date Range -->
+                        <div class="filter-box">
+                            <h3>Creation Date</h3>
+                            <div class="range-slider">
+                                <div class="range-values">
+                                    <span id="creation-start-value">1950</span>
+                                    <span id="creation-end-value">2024</span>
+                                </div>
+                                <div class="range-inputs">
+                                    <input type="range" name="creation_start" min="1950" max="2024" 
+                                           value="{{.SelectedFilters.CreationStart}}" class="range creation-start">
+                                    <input type="range" name="creation_end" min="1950" max="2024" 
+                                           value="{{.SelectedFilters.CreationEnd}}" class="range creation-end">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- First Album Year Range -->
+                        <div class="filter-box">
+                            <h3>First Album Year</h3>
+                            <div class="range-slider">
+                                <div class="range-values">
+                                    <span id="album-start-value">1950</span>
+                                    <span id="album-end-value">2024</span>
+                                </div>
+                                <div class="range-inputs">
+                                    <input type="range" name="album_start" min="1950" max="2024" 
+                                           value="{{.SelectedFilters.AlbumStartYear}}" class="range album-start">
+                                    <input type="range" name="album_end" min="1950" max="2024" 
+                                           value="{{.SelectedFilters.AlbumEndYear}}" class="range album-end">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Locations Filter -->
+                        <div class="filter-box">
+                            <h3>Concert Locations</h3>
+
+                            <div class="checkbox-group scrollable">
+                                {{range .UniqueLocations}}
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="location" value="{{.}}"
+                                        {{if contains $.SelectedFilters.Locations .}}checked{{end}}>
+                                    {{.}}
+                                </label>
+                                {{end}}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="filter-actions">
+                        <button type="submit" class="apply-filters">Apply Filters</button>
+                        <button type="button" class="clear-filters">Clear All</button>
+                    </div>
+                </form>
+            </div>
         </header>
 
         <main>
             <div class="artists-grid">
-                {{range .Artists}}
-                <div class="artist-card">
-                    <a href="/artist?id={{.ID}}" class="artist-link">
-                        <div class="image-container">
-                            <img src="{{.Image}}" alt="{{.Name}}" loading="lazy">
-                        </div>
-                        <div class="artist-info">
-                            <h2>{{.Name}}</h2>
-                        </div>
-                    </a>
-                </div>
+                {{if .Artists}}
+                    {{range .Artists}}
+                    <div class="artist-card">
+                        <a href="/artist?id={{.ID}}" class="artist-link">
+                            <div class="image-container">
+                                <img src="{{.Image}}" alt="{{.Name}}" loading="lazy">
+                            </div>
+                            <div class="artist-info">
+                                <h2>{{.Name}}</h2>
+                            </div>
+                        </a>
+                    </div>
+                    {{end}}
+                {{else}}
+                    <div class="no-results-message">
+                        <h2>No artists found</h2>
+                        <p>Try adjusting your filter criteria</p>
+                    </div>
                 {{end}}
             </div>
         </main>
