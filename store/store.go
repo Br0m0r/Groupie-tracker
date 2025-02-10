@@ -7,6 +7,7 @@ import (
 	"sync"
 
 	"groupie/models"
+	"groupie/utils"
 )
 
 // ApiIndex holds the structure of the main API response
@@ -75,7 +76,9 @@ func (ds *DataStore) Initialize() error {
 				errChan <- err
 				return
 			}
-			artist.LocationsList = location.Locations
+			for _, loc := range location.Locations {
+				artist.LocationsList = append(artist.LocationsList, utils.FormatLocation(loc))
+			}
 
 			// Fetch dates
 			var date models.Date
@@ -89,7 +92,9 @@ func (ds *DataStore) Initialize() error {
 				errChan <- err
 				return
 			}
-			artist.DatesList = date.Dates
+			for _, date := range date.Dates {
+				artist.DatesList = append(artist.DatesList, utils.FormatDate(date))
+			}
 
 			// Fetch relations
 			var relation models.Relation
@@ -103,7 +108,7 @@ func (ds *DataStore) Initialize() error {
 				errChan <- err
 				return
 			}
-			artist.RelationsList = relation.DatesLocations
+			artist.RelationsList = utils.FormatRelation(relation.DatesLocations)
 		}(&artists[i])
 	}
 

@@ -7,7 +7,6 @@ import (
 	"strconv"
 
 	"groupie/store"
-	"groupie/utils"
 )
 
 // dataStore holds the application's data layer
@@ -114,10 +113,7 @@ func ArtistHandler(w http.ResponseWriter, r *http.Request) {
 		ErrorHandler(w, ErrNotFound, "Artist not found")
 		return
 	}
-	// Format the data
-	artist.LocationsList = utils.FormatLocationsList(artist.LocationsList)
-	artist.DatesList = utils.FormatDatesList(artist.DatesList)
-	artist.RelationsList = utils.FormatRelation(artist.RelationsList)
+
 	tmpl, err := template.ParseFiles("templates/artist.html")
 	if err != nil {
 		ErrorHandler(w, ErrInternalServer, "Failed to load template")

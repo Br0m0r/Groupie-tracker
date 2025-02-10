@@ -1,4 +1,3 @@
-// Package utils provides formatting and utility functions for the application
 package utils
 
 import (
@@ -73,15 +72,6 @@ func FormatLocationsList(locations []string) []string {
 	formatted := make([]string, len(locations))
 	for i, loc := range locations {
 		formatted[i] = FormatLocation(loc)
-	}
-	return formatted
-}
-
-// FormatDatesList formats a slice of dates
-func FormatDatesList(dates []string) []string {
-	formatted := make([]string, len(dates))
-	for i, date := range dates {
-		formatted[i] = FormatDate(date)
 	}
 	return formatted
 }
