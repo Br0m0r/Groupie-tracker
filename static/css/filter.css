@@ -61,12 +61,18 @@
 
 .checkbox-label {
     font-size: 0.8rem;
-    padding: 0.15rem;
+    padding: 0.5rem 0.75rem;
     display: flex;
-    align-items: center;
-    gap: 0.25rem;
+    align-items: flex-start;
+    gap: 0.5rem;
+    width: 100%;
+    line-height: 1;
+    height: 300;
 }
-
+.checkbox-label input[type="checkbox"] {
+    margin-top: 0.2rem;
+    flex-shrink: 0;
+}
 /* Range Slider */
 .range-slider {
     flex: 1;

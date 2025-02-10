@@ -1,5 +1,3 @@
-// static/js/filter.js
-
 //clear filters button  !!!
 document.addEventListener('DOMContentLoaded', () => {
     // Get the clear button and filter form
@@ -113,23 +111,3 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
-
-
-
-// menu bar for windows location 
-document.querySelectorAll('.submenu-item').forEach(item => {
-    item.addEventListener('click', function() {
-        // Handle click on city
-        console.log('Selected:', this.textContent);
-        // You can add your custom handling here
-    });
-});
-
-document.querySelectorAll('.menu-item').forEach(item => {
-    item.addEventListener('click', function(e) {
-        if (e.target === this) {
-            // Handle click on country
-            console.log('Selected country:', this.textContent.trim());
-        }
-    });
-});

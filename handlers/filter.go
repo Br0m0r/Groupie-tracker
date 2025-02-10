@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"html/template"
 	"net/http"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -35,12 +36,7 @@ func getUniqueLocations(artists []models.Artist) []string {
 
 	for _, artist := range artists {
 		for _, location := range artist.LocationsList {
-			// Split location into parts (e.g., "London, UK" -> ["London", "UK"])
-			parts := strings.Split(location, ", ")
-			// Add each part as a unique location
-			for _, part := range parts {
-				locationMap[part] = true
-			}
+			locationMap[location] = true
 		}
 	}
 
@@ -49,6 +45,7 @@ func getUniqueLocations(artists []models.Artist) []string {
 	for location := range locationMap {
 		locations = append(locations, location)
 	}
+	sort.Strings(locations)
 	return locations
 }
 
@@ -80,7 +77,6 @@ func FilterHandler(w http.ResponseWriter, r *http.Request) {
 		SelectedFilters: params,
 		TotalResults:    len(filteredArtists),
 	}
-
 	// Parse and execute template with functions
 	funcMap := template.FuncMap{
 		"iterate": func(start, end int) []int {
