@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"groupie/models"
+	"groupie/utils"
 )
 
 // FilterData represents all the data needed for the filter page
@@ -178,15 +179,40 @@ func filterArtists(artists []models.Artist, params FilterParams) []models.Artist
 // matchesFilters checks if an artist matches all filter criteria
 func matchesFilters(artist models.Artist, params FilterParams) bool {
 	// Check member count
-	if len(params.MemberCounts) > 0 {
-		memberCount := len(artist.Members)
-		if memberCount > 8 {
-			memberCount = 8 // Cap at 8 for "8+" option
-		}
+	if len(params.Locations) > 0 {
 		found := false
-		for _, count := range params.MemberCounts {
-			if memberCount == count {
-				found = true
+		for _, artistLocation := range artist.LocationsList {
+			artistLocLower := strings.ToLower(artistLocation)
+
+			for _, filterLocation := range params.Locations {
+				filterLocLower := strings.ToLower(filterLocation)
+
+				// Direct match check
+				if strings.Contains(artistLocLower, filterLocLower) {
+					found = true
+					break
+				}
+
+				// Check if filter location is a state and artist location contains any of its cities
+				if cities := utils.GetCitiesInState(filterLocLower); len(cities) > 0 {
+					for _, city := range cities {
+						if strings.Contains(artistLocLower, city) {
+							found = true
+							break
+						}
+					}
+				}
+
+				// Check if filter location is a city and artist location contains either the city
+				// or its corresponding state
+				if state := utils.GetStateForCity(filterLocLower); state != "" {
+					if strings.Contains(artistLocLower, filterLocLower) || strings.Contains(artistLocLower, state) {
+						found = true
+						break
+					}
+				}
+			}
+			if found {
 				break
 			}
 		}
