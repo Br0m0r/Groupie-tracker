@@ -3,10 +3,8 @@ package handlers
 
 import (
 	"html/template"
-	"log"
 	"net/http"
 	"strconv"
-	"strings"
 
 	"groupie/store"
 )
@@ -19,38 +17,13 @@ func Initialize(ds *store.DataStore) {
 	dataStore = ds
 }
 
-<<<<<<< HEAD
-type ArtistTemplateData struct {
-	models.Artist
-	RefererQuery string
-}
-
-// FuncMap for template functions
-var funcMap = template.FuncMap{
-	"join": strings.Join,
-	"parseDate": func(date string) int {
-		// Assuming date is in format "DD-MM-YYYY"
-		parts := strings.Split(date, "-")
-		if len(parts) >= 3 {
-			year, _ := strconv.Atoi(parts[2])
-			return year
-		}
-		return 0
-	},
-}
-
-=======
 // HomeHandler serves the main page with artist listings
->>>>>>> giannis
 func HomeHandler(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/" {
 		ErrorHandler(w, ErrNotFound, "Page not exist")
 		return
 	}
 
-<<<<<<< HEAD
-	// Parse template
-=======
 	// Get all artists for unique locations
 	allArtists := dataStore.GetAllArtists()
 
@@ -106,26 +79,14 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Parse template with functions
->>>>>>> giannis
 	tmpl, err := template.New("index.html").Funcs(funcMap).ParseFiles("templates/index.html")
 	if err != nil {
-		log.Printf("Template parsing error: %v", err)
 		ErrorHandler(w, ErrInternalServer, "Failed to load template")
 		return
 	}
 
-<<<<<<< HEAD
-	// Get data
-	artists := dataStore.GetArtistCards()
-
-	// Execute template
-	err = tmpl.Execute(w, artists)
-	if err != nil {
-		log.Printf("Template execution error: %v", err)
-=======
 	// Execute template with data
 	if err := tmpl.Execute(w, data); err != nil {
->>>>>>> giannis
 		ErrorHandler(w, ErrInternalServer, "Failed to execute template")
 		return
 	}
