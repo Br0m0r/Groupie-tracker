@@ -3,6 +3,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const suggestionsList = document.querySelector('.suggestions-list');
     const searchContainer = document.querySelector('.search-suggestions');
 
+<<<<<<< HEAD
+=======
+   
+>>>>>>> giannis
     searchInput.addEventListener('input', (e) => {
         const query = e.target.value.trim();
         
@@ -26,6 +30,10 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             searchContainer.style.display = 'block';
+<<<<<<< HEAD
+=======
+            // Render all results without limiting to 5
+>>>>>>> giannis
             suggestionsList.innerHTML = results.map(suggestion => `
                 <div class="suggestion-item">
                     <span class="suggestion-text">${suggestion.text}</span>

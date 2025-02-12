@@ -1,4 +1,4 @@
-// handlers/errors.go
+// Package handlers provides HTTP request handlers and error handling for the application
 package handlers
 
 import (
@@ -6,11 +6,19 @@ import (
 	"net/http"
 )
 
+// ErrorType represents a basic HTTP error with status code and message
 type ErrorType struct {
 	Status  int
 	Message string
 }
 
+// ErrorData combines an ErrorType with additional description for template rendering
+type ErrorData struct {
+	ErrorType
+	Description string
+}
+
+// Predefined application errors
 var (
 	ErrBadRequest = ErrorType{
 		Status:  http.StatusBadRequest,
@@ -30,18 +38,13 @@ var (
 	}
 )
 
-type ErrorData struct {
-	Status      int
-	Message     string
-	Description string
-}
-
+// ErrorHandler renders the error page template with provided error information
+// If template processing fails, falls back to basic HTTP error response
 func ErrorHandler(w http.ResponseWriter, errType ErrorType, description string) {
 	w.WriteHeader(errType.Status)
 
 	data := ErrorData{
-		Status:      errType.Status,
-		Message:     errType.Message,
+		ErrorType:   errType,
 		Description: description,
 	}
 

@@ -7,56 +7,41 @@ import (
 	"html/template"
 	"net/http"
 	"strings"
+
+	"groupie/models"
 )
 
-type SearchResult struct {
-	Text        string `json:"text"`
-	Type        string `json:"type"`
-	ArtistName  string `json:"artistName"`
-	Description string `json:"description"`
-	ArtistId    int    `json:"artistId,omitempty"`
-}
-
-type SearchData struct {
-	Query   string
-	Results []SearchResult
-	ShowAll bool
-}
-
-// handlers/search.go
+// SearchHandler handles both AJAX search suggestions and full search page requests
 func SearchHandler(w http.ResponseWriter, r *http.Request) {
 	query := strings.TrimSpace(r.URL.Query().Get("q"))
 
-	// Handle AJAX requests for suggestions
+	// Handle AJAX requests for search suggestions
 	if r.Header.Get("X-Requested-With") == "XMLHttpRequest" {
 		results := searchAllData(query)
-		// Limit to first 5 suggestions only
-		if len(results) > 5 {
-			results = results[:5]
-		}
+		// Remove the limit of 5 items
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(results)
 		return
 	}
 
-	// Handle regular form submission
+	// Handle search page with non-empty query
 	if query != "" {
-		results := searchAllData(query) // Full results for search page
+		results := searchAllData(query)
 
-		// If exactly one result, redirect to artist page
+		// Redirect to artist page if exactly one result
 		if len(results) == 1 {
 			http.Redirect(w, r, fmt.Sprintf("/artist?id=%d", results[0].ArtistId), http.StatusSeeOther)
 			return
 		}
 
-		// Otherwise render search results page
+		// Render search results page
 		tmpl, err := template.ParseFiles("templates/search.html")
 		if err != nil {
 			ErrorHandler(w, ErrInternalServer, "Failed to load template")
 			return
 		}
 
-		data := SearchData{
+		data := models.SearchData{
 			Query:   query,
 			Results: results,
 			ShowAll: false,
@@ -69,14 +54,14 @@ func SearchHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Handle empty query
+	// Render empty search page
 	tmpl, err := template.ParseFiles("templates/search.html")
 	if err != nil {
 		ErrorHandler(w, ErrInternalServer, "Failed to load template")
 		return
 	}
 
-	data := SearchData{
+	data := models.SearchData{
 		Query:   "",
 		Results: nil,
 		ShowAll: true,
@@ -87,12 +72,18 @@ func SearchHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func searchAllData(query string) []SearchResult {
-	var results []SearchResult
+func searchAllData(query string) []models.SearchResult {
+	var results []models.SearchResult
+	var (
+		artistResults   []models.SearchResult
+		memberResults   []models.SearchResult
+		locationResults []models.SearchResult
+		dateResults     []models.SearchResult
+		albumResults    []models.SearchResult
+	)
+
 	artists := dataStore.GetAllArtists()
 	query = strings.ToLower(query)
-
-	// Check if it's a single letter query
 	isSingleLetter := len([]rune(query)) == 1
 
 	for _, artist := range artists {
@@ -100,7 +91,7 @@ func searchAllData(query string) []SearchResult {
 		artistNameLower := strings.ToLower(artist.Name)
 		if (isSingleLetter && strings.HasPrefix(artistNameLower, query)) ||
 			(!isSingleLetter && strings.Contains(artistNameLower, query)) {
-			results = append(results, SearchResult{
+			artistResults = append(artistResults, models.SearchResult{
 				Text:        artist.Name,
 				Type:        "artist/band",
 				ArtistName:  artist.Name,
@@ -114,7 +105,7 @@ func searchAllData(query string) []SearchResult {
 			memberLower := strings.ToLower(member)
 			if (isSingleLetter && strings.HasPrefix(memberLower, query)) ||
 				(!isSingleLetter && strings.Contains(memberLower, query)) {
-				results = append(results, SearchResult{
+				memberResults = append(memberResults, models.SearchResult{
 					Text:        member,
 					Type:        "member",
 					ArtistName:  artist.Name,
@@ -129,7 +120,7 @@ func searchAllData(query string) []SearchResult {
 			locationLower := strings.ToLower(location)
 			if (isSingleLetter && strings.HasPrefix(locationLower, query)) ||
 				(!isSingleLetter && strings.Contains(locationLower, query)) {
-				results = append(results, SearchResult{
+				locationResults = append(locationResults, models.SearchResult{
 					Text:        location,
 					Type:        "location",
 					ArtistName:  artist.Name,
@@ -141,9 +132,9 @@ func searchAllData(query string) []SearchResult {
 
 		// Creation date search - only for non-single letter queries
 		if !isSingleLetter {
-			creationStr := fmt.Sprintf("%d", artist.CreationDate)
+			creationStr := fmt.Sprintf("%d", artist.CreationDate) // creation date is int so convert to string
 			if strings.Contains(creationStr, query) {
-				results = append(results, SearchResult{
+				dateResults = append(dateResults, models.SearchResult{
 					Text:        fmt.Sprintf("%s (%d)", artist.Name, artist.CreationDate),
 					Type:        "creation date",
 					ArtistName:  artist.Name,
@@ -157,7 +148,7 @@ func searchAllData(query string) []SearchResult {
 		albumLower := strings.ToLower(artist.FirstAlbum)
 		if (isSingleLetter && strings.HasPrefix(albumLower, query)) ||
 			(!isSingleLetter && strings.Contains(albumLower, query)) {
-			results = append(results, SearchResult{
+			albumResults = append(albumResults, models.SearchResult{
 				Text:        fmt.Sprintf("%s - %s", artist.Name, artist.FirstAlbum),
 				Type:        "first album",
 				ArtistName:  artist.Name,
@@ -166,6 +157,13 @@ func searchAllData(query string) []SearchResult {
 			})
 		}
 	}
+
+	// Combine results in desired order
+	results = append(results, artistResults...)   // Artists first
+	results = append(results, memberResults...)   // Then members
+	results = append(results, locationResults...) // Then locations
+	results = append(results, dateResults...)     // Then creation dates
+	results = append(results, albumResults...)    // Finally albums
 
 	return results
 }
