@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"groupie/models"
 	"groupie/store"
 )
 
@@ -28,10 +29,10 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 	allArtists := dataStore.GetAllArtists()
 
 	// Prepare data for template including filter data
-	data := FilterData{
+	data := models.FilterData{
 		Artists:         dataStore.GetArtistCards(),
 		UniqueLocations: getUniqueLocations(allArtists),
-		SelectedFilters: FilterParams{
+		SelectedFilters: models.FilterParams{
 			CreationStart:  1950,
 			CreationEnd:    2024,
 			AlbumStartYear: 1950,

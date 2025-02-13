@@ -1,9 +1,14 @@
 package utils
 
 import (
+	"fmt"
+	"net/http"
+	"strconv"
 	"strings"
 	"time"
 )
+
+// In this package we have a few functions that are used to format data for search and filter results.
 
 // FormatLocation formats a location string to be more readable
 // Example: "los_angeles-usa" -> "Los Angeles, USA"
@@ -74,4 +79,40 @@ func FormatLocationsList(locations []string) []string {
 		formatted[i] = FormatLocation(loc)
 	}
 	return formatted
+}
+
+// extractYear gets the year from a date string in format "DD-MM-YYYY"
+func ExtractYear(date string) int {
+	parts := strings.Split(date, "-")
+	if len(parts) != 3 {
+		return 0
+	}
+	year, err := strconv.Atoi(parts[2])
+	if err != nil {
+		return 0
+	}
+	return year
+}
+
+// Helper function to parse int with default value
+func ParseIntDefault(s string, def int) int {
+	if s == "" {
+		return def
+	}
+	val, err := strconv.Atoi(s)
+	if err != nil {
+		return def
+	}
+	return val
+}
+
+// Helper function to get selected member counts from form
+func GetMemberCounts(r *http.Request) []int {
+	var counts []int
+	for i := 1; i <= 8; i++ {
+		if r.FormValue(fmt.Sprintf("members_%d", i)) != "" {
+			counts = append(counts, i)
+		}
+	}
+	return counts
 }

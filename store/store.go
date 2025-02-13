@@ -63,6 +63,7 @@ func (ds *DataStore) Initialize() error {
 		wg.Add(1)
 		go func(artist *models.Artist) {
 			defer wg.Done()
+			artist.LocationData = make(map[string][]string)
 
 			// Fetch locations
 			var location models.Location
@@ -72,14 +73,26 @@ func (ds *DataStore) Initialize() error {
 				return
 			}
 			defer resp.Body.Close()
+
 			if err := json.NewDecoder(resp.Body).Decode(&location); err != nil {
 				errChan <- err
 				return
 			}
-			for _, loc := range location.Locations {
-				artist.LocationsList = append(artist.LocationsList, utils.FormatLocation(loc))
-			}
 
+			// Process each location
+			for _, loc := range location.Locations {
+				formattedLoc := utils.FormatLocation(loc)
+				artist.LocationsList = append(artist.LocationsList, formattedLoc)
+
+				// Check if this location is in our StateCityMap
+				for state, cities := range utils.StateCityMap {
+					for _, city := range cities {
+						if formattedLoc == city {
+							artist.LocationData[state] = append(artist.LocationData[state], city)
+						}
+					}
+				}
+			}
 			// Fetch dates
 			var date models.Date
 			resp, err = http.Get(artist.ConcertDates)
