@@ -1,44 +1,27 @@
-// utils/geography.go
-
 package utils
 
 // stateCityMap maps US states to their cities from our dataset
-var stateCityMap = map[string][]string{
-	"washington":     {"seattle"},
-	"california":     {"los angeles", "anaheim", "oakland", "del mar", "san francisco", "pico rivera", "inglewood"},
-	"missouri":       {"kansas city", "st louis"},
-	"texas":          {"dallas", "houston"},
-	"georgia":        {"atlanta"},
-	"massachusetts":  {"boston"},
-	"new york":       {"brooklyn", "newark", "uniondale"},
-	"illinois":       {"chicago", "berwyn", "rosemont"},
-	"pennsylvania":   {"philadelphia", "pittsburgh", "hershey"},
-	"michigan":       {"grand rapids", "detroit"},
-	"indiana":        {"indianapolis"},
-	"ohio":           {"cleveland", "cincinnati"},
-	"nebraska":       {"omaha"},
-	"north carolina": {"charlotte", "columbia"},
-	"louisiana":      {"new orleans"},
-	"wisconsin":      {"madison"},
-}
-
-// GetStateForCity returns the state that a city belongs to, or empty string if not found
-func GetStateForCity(city string) string {
-	for state, cities := range stateCityMap {
-		for _, c := range cities {
-			if c == city {
-				return state
-			}
-		}
-	}
-	return ""
-}
-
-// GetCitiesInState returns all cities in a state
-func GetCitiesInState(state string) []string {
-	cities, exists := stateCityMap[state]
-	if !exists {
-		return []string{}
-	}
-	return cities
+var StateCityMap = map[string][]string{
+	"Washington, Usa":     {"Seattle, Usa"},
+	"California, Usa":     {"Los Angeles, Usa", "Anaheim, Usa", "Oakland, Usa", "Del Mar, Usa", "San Francisco, Usa", "Pico Rivera, Usa", "Inglewood, Usa"},
+	"Missouri, Usa":       {"Kansas City, Usa", "St Louis, Usa"},
+	"Texas, Usa":          {"Dallas, Usa", "Houston, Usa"},
+	"Georgia, Usa":        {"Atlanta, Usa"},
+	"Massachusetts, Usa":  {"Boston, Usa"},
+	"New York, Usa":       {"Brooklyn, Usa", "Newark, Usa", "Uniondale, Usa"},
+	"Illinois, Usa":       {"Chicago, Usa", "Berwyn, Usa", "Rosemont, Usa"},
+	"Pennsylvania, Usa":   {"Philadelphia, Usa", "Pittsburgh, Usa", "Hershey, Usa"},
+	"Michigan, Usa":       {"Grand Rapids, Usa", "Detroit, Usa"},
+	"Indiana, Usa":        {"Indianapolis, Usa"},
+	"Ohio, Usa":           {"Cleveland, Usa", "Cincinnati, Usa"},
+	"Nebraska, Usa":       {"Omaha, Usa"},
+	"North Carolina, Usa": {"Charlotte, Usa", "Columbia, Usa"},
+	"Louisiana, Usa":      {"New Orleans, Usa"},
+	"Wisconsin, Usa":      {"Madison, Usa"},
+	"Nevada":              {"Las Vegas"},
+	// Australian states and cities
+	"Victoria":          {"Melbourne", "West Melbourne"},
+	"New South Wales":   {"Sydney"},
+	"Queensland":        {"Brisbane"},
+	"Western Australia": {"Burswood"},
 }

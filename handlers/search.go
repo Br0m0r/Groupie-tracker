@@ -18,7 +18,6 @@ func SearchHandler(w http.ResponseWriter, r *http.Request) {
 	// Handle AJAX requests for search suggestions
 	if r.Header.Get("X-Requested-With") == "XMLHttpRequest" {
 		results := searchAllData(query)
-		// Remove the limit of 5 items
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(results)
 		return
@@ -72,6 +71,7 @@ func SearchHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// search all data function base on query string
 func searchAllData(query string) []models.SearchResult {
 	var results []models.SearchResult
 	var (

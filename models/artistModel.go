@@ -12,11 +12,13 @@ type Artist struct {
 	Locations    string `json:"locations"`
 	ConcertDates string `json:"concertDates"`
 	Relations    string `json:"relations"`
-	// These will store the actual data after fetching from URLs
+	// These store the actual data after fetching from URLs
 	LocationsList []string            `json:"-"`
+	LocationData  map[string][]string `json:"-"` // maps states to their cities
 	DatesList     []string            `json:"-"`
 	RelationsList map[string][]string `json:"-"`
 }
+
 type ArtistCard struct {
 	ID    int    `json:"id"`
 	Name  string `json:"name"`
@@ -37,19 +39,4 @@ type Date struct {
 type Relation struct {
 	ID             int                 `json:"id"`
 	DatesLocations map[string][]string `json:"datesLocations"`
-}
-
-// structs for search.go.
-type SearchResult struct {
-	Text        string `json:"text"`
-	Type        string `json:"type"`
-	ArtistName  string `json:"artistName"`
-	Description string `json:"description"`
-	ArtistId    int    `json:"artistId,omitempty"`
-}
-
-type SearchData struct {
-	Query   string
-	Results []SearchResult
-	ShowAll bool
 }

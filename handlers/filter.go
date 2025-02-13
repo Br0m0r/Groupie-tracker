@@ -6,30 +6,11 @@ import (
 	"html/template"
 	"net/http"
 	"sort"
-	"strconv"
 	"strings"
 
 	"groupie/models"
 	"groupie/utils"
 )
-
-// FilterData represents all the data needed for the filter page
-type FilterData struct {
-	Artists         []models.ArtistCard
-	UniqueLocations []string
-	SelectedFilters FilterParams
-	TotalResults    int
-}
-
-// FilterParams holds all possible filter parameters
-type FilterParams struct {
-	MemberCounts   []int    // Selected member counts
-	Locations      []string // Selected locations
-	CreationStart  int      // Creation date range start
-	CreationEnd    int      // Creation date range end
-	AlbumStartYear int      // First album year range start
-	AlbumEndYear   int      // First album year range end
-}
 
 // getUniqueLocations extracts unique locations from all artists
 func getUniqueLocations(artists []models.Artist) []string {
@@ -58,13 +39,13 @@ func FilterHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Get all filter parameters
-	params := FilterParams{
-		MemberCounts:   getMemberCounts(r),
+	params := models.FilterParams{
+		MemberCounts:   utils.GetMemberCounts(r),
 		Locations:      r.Form["location"],
-		CreationStart:  parseIntDefault(r.FormValue("creation_start"), 1950),
-		CreationEnd:    parseIntDefault(r.FormValue("creation_end"), 2024),
-		AlbumStartYear: parseIntDefault(r.FormValue("album_start"), 1950),
-		AlbumEndYear:   parseIntDefault(r.FormValue("album_end"), 2024),
+		CreationStart:  utils.ParseIntDefault(r.FormValue("creation_start"), 1950),
+		CreationEnd:    utils.ParseIntDefault(r.FormValue("creation_end"), 2024),
+		AlbumStartYear: utils.ParseIntDefault(r.FormValue("album_start"), 1950),
+		AlbumEndYear:   utils.ParseIntDefault(r.FormValue("album_end"), 2024),
 	}
 
 	// Get all artists and apply filters
@@ -72,7 +53,7 @@ func FilterHandler(w http.ResponseWriter, r *http.Request) {
 	filteredArtists := filterArtists(allArtists, params)
 
 	// Prepare data for template
-	data := FilterData{
+	data := models.FilterData{
 		Artists:         convertToCards(filteredArtists),
 		UniqueLocations: getUniqueLocations(allArtists),
 		SelectedFilters: params,
@@ -126,44 +107,8 @@ func FilterHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// Helper function to get selected member counts from form
-func getMemberCounts(r *http.Request) []int {
-	var counts []int
-	for i := 1; i <= 8; i++ {
-		if r.FormValue(fmt.Sprintf("members_%d", i)) != "" {
-			counts = append(counts, i)
-		}
-	}
-	return counts
-}
-
-// Helper function to parse int with default value
-func parseIntDefault(s string, def int) int {
-	if s == "" {
-		return def
-	}
-	val, err := strconv.Atoi(s)
-	if err != nil {
-		return def
-	}
-	return val
-}
-
-// extractYear gets the year from a date string in format "DD-MM-YYYY"
-func extractYear(date string) int {
-	parts := strings.Split(date, "-")
-	if len(parts) != 3 {
-		return 0
-	}
-	year, err := strconv.Atoi(parts[2])
-	if err != nil {
-		return 0
-	}
-	return year
-}
-
 // filterArtists applies all filters to the artist list
-func filterArtists(artists []models.Artist, params FilterParams) []models.Artist {
+func filterArtists(artists []models.Artist, params models.FilterParams) []models.Artist {
 	var filtered []models.Artist
 
 	for _, artist := range artists {
@@ -177,65 +122,55 @@ func filterArtists(artists []models.Artist, params FilterParams) []models.Artist
 }
 
 // matchesFilters checks if an artist matches all filter criteria
-func matchesFilters(artist models.Artist, params FilterParams) bool {
-	// Check member count
-	if len(params.Locations) > 0 {
+func matchesFilters(artist models.Artist, params models.FilterParams) bool {
+	fmt.Printf("\nChecking artist: %s\n", artist.Name)
+
+	// Member count check remains the same
+	if len(params.MemberCounts) > 0 {
+		memberCount := len(artist.Members)
+		if memberCount > 8 {
+			memberCount = 8
+		}
 		found := false
-		for _, artistLocation := range artist.LocationsList {
-			artistLocLower := strings.ToLower(artistLocation)
-
-			for _, filterLocation := range params.Locations {
-				filterLocLower := strings.ToLower(filterLocation)
-
-				// Direct match check
-				if strings.Contains(artistLocLower, filterLocLower) {
-					found = true
-					break
-				}
-
-				// Check if filter location is a state and artist location contains any of its cities
-				if cities := utils.GetCitiesInState(filterLocLower); len(cities) > 0 {
-					for _, city := range cities {
-						if strings.Contains(artistLocLower, city) {
-							found = true
-							break
-						}
-					}
-				}
-
-				// Check if filter location is a city and artist location contains either the city
-				// or its corresponding state
-				if state := utils.GetStateForCity(filterLocLower); state != "" {
-					if strings.Contains(artistLocLower, filterLocLower) || strings.Contains(artistLocLower, state) {
-						found = true
-						break
-					}
-				}
-			}
-			if found {
+		for _, count := range params.MemberCounts {
+			if memberCount == count {
+				found = true
 				break
 			}
 		}
 		if !found {
+			fmt.Printf("Failed member count check\n")
 			return false
 		}
 	}
 
-	// Check creation date range
+	// Creation date check remains the same
 	if artist.CreationDate < params.CreationStart || artist.CreationDate > params.CreationEnd {
 		return false
 	}
 
-	// Check locations
+	// Location check - with debug prints
 	if len(params.Locations) > 0 {
 		found := false
-		for _, artistLocation := range artist.LocationsList {
-			for _, filterLocation := range params.Locations {
+		for _, filterLocation := range params.Locations {
+			// First check LocationsList
+			for _, artistLocation := range artist.LocationsList {
 				if strings.Contains(strings.ToLower(artistLocation), strings.ToLower(filterLocation)) {
 					found = true
 					break
 				}
 			}
+
+			// Then check LocationData if not found yet
+			if !found {
+				// Check if it's a state
+				if _, exists := utils.StateCityMap[filterLocation]; exists {
+					if cities, ok := artist.LocationData[filterLocation]; ok && len(cities) > 0 {
+						found = true
+					}
+				}
+			}
+
 			if found {
 				break
 			}
@@ -245,8 +180,8 @@ func matchesFilters(artist models.Artist, params FilterParams) bool {
 		}
 	}
 
-	// Check first album year
-	albumYear := extractYear(artist.FirstAlbum)
+	// Album year check remains the same
+	albumYear := utils.ExtractYear(artist.FirstAlbum)
 	if albumYear < params.AlbumStartYear || albumYear > params.AlbumEndYear {
 		return false
 	}
