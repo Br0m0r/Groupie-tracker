@@ -2,34 +2,13 @@
 package handlers
 
 import (
-	"fmt"
 	"html/template"
 	"net/http"
-	"sort"
 	"strings"
 
 	"groupie/models"
 	"groupie/utils"
 )
-
-// getUniqueLocations extracts unique locations from all artists
-func getUniqueLocations(artists []models.Artist) []string {
-	locationMap := make(map[string]bool)
-
-	for _, artist := range artists {
-		for _, location := range artist.LocationsList {
-			locationMap[location] = true
-		}
-	}
-
-	// Convert map to sorted slice
-	var locations []string
-	for location := range locationMap {
-		locations = append(locations, location)
-	}
-	sort.Strings(locations)
-	return locations
-}
 
 func FilterHandler(w http.ResponseWriter, r *http.Request) {
 	// Parse form data
@@ -55,9 +34,10 @@ func FilterHandler(w http.ResponseWriter, r *http.Request) {
 	// Prepare data for template
 	data := models.FilterData{
 		Artists:         convertToCards(filteredArtists),
-		UniqueLocations: getUniqueLocations(allArtists),
+		UniqueLocations: utils.GetUniqueLocations(allArtists),
 		SelectedFilters: params,
 		TotalResults:    len(filteredArtists),
+		CurrentPath:     r.URL.Path,
 	}
 	// Parse and execute template with functions
 	funcMap := template.FuncMap{
@@ -123,8 +103,6 @@ func filterArtists(artists []models.Artist, params models.FilterParams) []models
 
 // matchesFilters checks if an artist matches all filter criteria
 func matchesFilters(artist models.Artist, params models.FilterParams) bool {
-	fmt.Printf("\nChecking artist: %s\n", artist.Name)
-
 	// Member count check remains the same
 	if len(params.MemberCounts) > 0 {
 		memberCount := len(artist.Members)
@@ -139,7 +117,6 @@ func matchesFilters(artist models.Artist, params models.FilterParams) bool {
 			}
 		}
 		if !found {
-			fmt.Printf("Failed member count check\n")
 			return false
 		}
 	}

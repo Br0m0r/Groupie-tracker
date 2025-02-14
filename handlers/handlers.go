@@ -8,6 +8,7 @@ import (
 
 	"groupie/models"
 	"groupie/store"
+	"groupie/utils"
 )
 
 // dataStore holds the application's data layer
@@ -31,7 +32,7 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 	// Prepare data for template including filter data
 	data := models.FilterData{
 		Artists:         dataStore.GetArtistCards(),
-		UniqueLocations: getUniqueLocations(allArtists),
+		UniqueLocations: utils.GetUniqueLocations(allArtists),
 		SelectedFilters: models.FilterParams{
 			CreationStart:  1950,
 			CreationEnd:    2024,

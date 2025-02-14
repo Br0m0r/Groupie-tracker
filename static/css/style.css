@@ -41,6 +41,14 @@ body {
   z-index: 1;
 }
 
+.title-link {
+  text-decoration: none;
+  color: var(--primary-color);  /* Using our existing color variable */
+}
+
+.title-link:hover {
+  color: var(--primary-dark);
+}
 /* Header Styles */
 header {
   margin-bottom: 3rem;

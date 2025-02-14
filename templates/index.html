@@ -12,7 +12,7 @@
 <body>
     <div class="container">
         <header>
-            <h1>GROUPIE TRACKER</h1>
+            <h1><a href="/" class="title-link">GROUPIE TRACKER</a></h1>
             <p>Discover Artists and Their Concert History</p>
             
             <!-- Search form with live suggestions -->
@@ -114,6 +114,11 @@
                         <button type="submit" class="apply-filters">Apply Filters</button>
                         <button type="button" class="clear-filters">Clear All</button>
                     </div>
+                    {{if eq .CurrentPath "/filter"}}
+                        <div class="results-counter">
+                            Found {{.TotalResults}} artist{{if ne .TotalResults 1}}s{{end}}
+                        </div>
+                    {{end}}
                 </form>
             </div>
         </header>

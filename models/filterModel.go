@@ -6,6 +6,7 @@ type FilterData struct {
 	UniqueLocations []string
 	SelectedFilters FilterParams
 	TotalResults    int
+	CurrentPath     string
 }
 
 // FilterParams holds all possible filter parameters
