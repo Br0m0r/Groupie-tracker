@@ -1,4 +1,3 @@
-// Package handlers provides HTTP request handlers for the web application
 package handlers
 
 import (
@@ -10,15 +9,139 @@ import (
 	"groupie/utils"
 )
 
+// FilterHandler processes filter requests and returns filtered artists
 func FilterHandler(w http.ResponseWriter, r *http.Request) {
-	// Parse form data
 	if err := r.ParseForm(); err != nil {
 		ErrorHandler(w, ErrBadRequest, "Invalid form data")
 		return
 	}
 
-	// Get all filter parameters
-	params := models.FilterParams{
+	// Extract filter parameters
+	params := extractFilterParams(r)
+
+	// Get and filter artists
+	allArtists := dataStore.GetAllArtists()
+	filteredArtists := NewArtistFilter(params).Filter(allArtists)
+
+	// Prepare template data
+	data := models.FilterData{
+		Artists:         utils.ConvertToCards(filteredArtists),
+		UniqueLocations: utils.GetUniqueLocations(allArtists),
+		SelectedFilters: params,
+		TotalResults:    len(filteredArtists),
+		CurrentPath:     r.URL.Path,
+	}
+
+	// Execute template
+	if err := executeFilterTemplate(w, data); err != nil {
+		ErrorHandler(w, ErrInternalServer, "Failed to process template")
+		return
+	}
+}
+
+// ArtistFilter encapsulates filtering logic
+type ArtistFilter struct {
+	params models.FilterParams
+}
+
+// NewArtistFilter creates a new filter with given parameters
+func NewArtistFilter(params models.FilterParams) *ArtistFilter {
+	return &ArtistFilter{params: params}
+}
+
+// Filter applies all filters to the artist list
+func (af *ArtistFilter) Filter(artists []models.Artist) []models.Artist {
+	var filtered []models.Artist
+	for _, artist := range artists {
+		if af.matches(artist) {
+			filtered = append(filtered, artist)
+		}
+	}
+	return filtered
+}
+
+// matches checks if an artist matches all filter criteria
+func (af *ArtistFilter) matches(artist models.Artist) bool {
+	return af.matchesMemberCount(artist) &&
+		af.matchesCreationDate(artist) &&
+		af.matchesLocation(artist) &&
+		af.matchesAlbumYear(artist)
+}
+
+// matchesMemberCount checks if artist matches member count filter
+func (af *ArtistFilter) matchesMemberCount(artist models.Artist) bool {
+	if len(af.params.MemberCounts) == 0 {
+		return true
+	}
+
+	memberCount := len(artist.Members)
+	if memberCount > 8 {
+		memberCount = 8
+	}
+
+	for _, count := range af.params.MemberCounts {
+		if memberCount == count {
+			return true
+		}
+	}
+	return false
+}
+
+// matchesCreationDate checks if artist matches creation date range
+func (af *ArtistFilter) matchesCreationDate(artist models.Artist) bool {
+	return artist.CreationDate >= af.params.CreationStart &&
+		artist.CreationDate <= af.params.CreationEnd
+}
+
+// matchesLocation checks if artist matches location filters
+func (af *ArtistFilter) matchesLocation(artist models.Artist) bool {
+	if len(af.params.Locations) == 0 {
+		return true
+	}
+
+	for _, filterLocation := range af.params.Locations {
+		// Check direct location matches
+		for _, artistLocation := range artist.LocationsList {
+			if strings.Contains(
+				strings.ToLower(artistLocation),
+				strings.ToLower(filterLocation),
+			) {
+				return true
+			}
+		}
+
+		// Check state-city relationships
+		if cities, isState := utils.StateCityMap[filterLocation]; isState {
+			for _, city := range cities {
+				if af.hasLocation(artist, city) {
+					return true
+				}
+			}
+		}
+	}
+	return false
+}
+
+// hasLocation checks if artist has a specific location
+func (af *ArtistFilter) hasLocation(artist models.Artist, location string) bool {
+	for _, artistLocation := range artist.LocationsList {
+		if artistLocation == location {
+			return true
+		}
+	}
+	return false
+}
+
+// matchesAlbumYear checks if artist matches album year range
+func (af *ArtistFilter) matchesAlbumYear(artist models.Artist) bool {
+	albumYear := utils.ExtractYear(artist.FirstAlbum)
+	return albumYear >= af.params.AlbumStartYear &&
+		albumYear <= af.params.AlbumEndYear
+}
+
+// Helper function to extract filter parameters from request
+func extractFilterParams(r *http.Request) models.FilterParams {
+	return models.FilterParams{
 		MemberCounts:   utils.GetMemberCounts(r),
 		Locations:      r.Form["location"],
 		CreationStart:  utils.ParseIntDefault(r.FormValue("creation_start"), 1950),
@@ -26,20 +149,10 @@ func FilterHandler(w http.ResponseWriter, r *http.Request) {
 		AlbumStartYear: utils.ParseIntDefault(r.FormValue("album_start"), 1950),
 		AlbumEndYear:   utils.ParseIntDefault(r.FormValue("album_end"), 2024),
 	}
+}
 
-	// Get all artists and apply filters
-	allArtists := dataStore.GetAllArtists()
-	filteredArtists := filterArtists(allArtists, params)
-
-	// Prepare data for template
-	data := models.FilterData{
-		Artists:         convertToCards(filteredArtists),
-		UniqueLocations: utils.GetUniqueLocations(allArtists),
-		SelectedFilters: params,
-		TotalResults:    len(filteredArtists),
-		CurrentPath:     r.URL.Path,
-	}
-	// Parse and execute template with functions
+// Helper function to execute the filter template
+func executeFilterTemplate(w http.ResponseWriter, data models.FilterData) error {
 	funcMap := template.FuncMap{
 		"iterate": func(start, end int) []int {
 			var result []int
@@ -77,104 +190,8 @@ func FilterHandler(w http.ResponseWriter, r *http.Request) {
 
 	tmpl, err := template.New("index.html").Funcs(funcMap).ParseFiles("templates/index.html")
 	if err != nil {
-		ErrorHandler(w, ErrInternalServer, "Failed to load template")
-		return
+		return err
 	}
 
-	if err := tmpl.Execute(w, data); err != nil {
-		ErrorHandler(w, ErrInternalServer, "Failed to execute template")
-		return
-	}
-}
-
-// filterArtists applies all filters to the artist list
-func filterArtists(artists []models.Artist, params models.FilterParams) []models.Artist {
-	var filtered []models.Artist
-
-	for _, artist := range artists {
-		if !matchesFilters(artist, params) {
-			continue
-		}
-		filtered = append(filtered, artist)
-	}
-
-	return filtered
-}
-
-// matchesFilters checks if an artist matches all filter criteria
-func matchesFilters(artist models.Artist, params models.FilterParams) bool {
-	// Member count check remains the same
-	if len(params.MemberCounts) > 0 {
-		memberCount := len(artist.Members)
-		if memberCount > 8 {
-			memberCount = 8
-		}
-		found := false
-		for _, count := range params.MemberCounts {
-			if memberCount == count {
-				found = true
-				break
-			}
-		}
-		if !found {
-			return false
-		}
-	}
-
-	// Creation date check remains the same
-	if artist.CreationDate < params.CreationStart || artist.CreationDate > params.CreationEnd {
-		return false
-	}
-
-	// Location check - with debug prints
-	if len(params.Locations) > 0 {
-		found := false
-		for _, filterLocation := range params.Locations {
-			// First check LocationsList
-			for _, artistLocation := range artist.LocationsList {
-				if strings.Contains(strings.ToLower(artistLocation), strings.ToLower(filterLocation)) {
-					found = true
-					break
-				}
-			}
-
-			// Then check LocationData if not found yet
-			if !found {
-				// Check if it's a state
-				if _, exists := utils.StateCityMap[filterLocation]; exists {
-					if cities, ok := artist.LocationData[filterLocation]; ok && len(cities) > 0 {
-						found = true
-					}
-				}
-			}
-
-			if found {
-				break
-			}
-		}
-		if !found {
-			return false
-		}
-	}
-
-	// Album year check remains the same
-	albumYear := utils.ExtractYear(artist.FirstAlbum)
-	if albumYear < params.AlbumStartYear || albumYear > params.AlbumEndYear {
-		return false
-	}
-
-	return true
-}
-
-// Helper function to convert Artists to ArtistCards
-func convertToCards(artists []models.Artist) []models.ArtistCard {
-	cards := make([]models.ArtistCard, len(artists))
-	for i, artist := range artists {
-		cards[i] = models.ArtistCard{
-			ID:    artist.ID,
-			Name:  artist.Name,
-			Image: artist.Image,
-		}
-	}
-	return cards
+	return tmpl.Execute(w, data)
 }

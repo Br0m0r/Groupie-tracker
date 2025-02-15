@@ -11,10 +11,9 @@ import (
 	"groupie/models"
 )
 
-// In this package we have a few functions that are used to format data for search and filter results.
+// Format Locations Dates Relations and LocationsList !!!!
 
 // FormatLocation formats a location string to be more readable
-// Example: "los_angeles-usa" -> "Los Angeles, USA"
 func FormatLocation(location string) string {
 	// Split by hyphen first (for country separation)
 	parts := strings.Split(location, "-")
@@ -40,7 +39,6 @@ func FormatLocation(location string) string {
 }
 
 // FormatDate formats a concert date string to be more readable
-// Example: "02-01-2019" -> "January 2, 2019"
 func FormatDate(date string) string {
 	if strings.HasPrefix(date, "*") {
 		date = strings.TrimSpace(date[1:])
@@ -55,7 +53,6 @@ func FormatDate(date string) string {
 }
 
 // FormatRelation formats the relation data (date-location pairs)
-// Takes a map of locations to dates and returns a formatted string
 func FormatRelation(relations map[string][]string) map[string][]string {
 	formatted := make(map[string][]string)
 
@@ -84,7 +81,21 @@ func FormatLocationsList(locations []string) []string {
 	return formatted
 }
 
-// extractYear gets the year from a date string in format "DD-MM-YYYY"
+// --------- Filter helping functions !!!!!
+//
+// ParseIntDefault safely parses a string to int with a default value
+func ParseIntDefault(s string, def int) int {
+	if s == "" {
+		return def
+	}
+	val, err := strconv.Atoi(s)
+	if err != nil {
+		return def
+	}
+	return val
+}
+
+// ExtractYear gets the year from a date string in format "DD-MM-YYYY"
 func ExtractYear(date string) int {
 	parts := strings.Split(date, "-")
 	if len(parts) != 3 {
@@ -97,19 +108,7 @@ func ExtractYear(date string) int {
 	return year
 }
 
-// Helper function to parse int with default value
-func ParseIntDefault(s string, def int) int {
-	if s == "" {
-		return def
-	}
-	val, err := strconv.Atoi(s)
-	if err != nil {
-		return def
-	}
-	return val
-}
-
-// Helper function to get selected member counts from form
+// GetMemberCounts extracts selected member counts from form
 func GetMemberCounts(r *http.Request) []int {
 	var counts []int
 	for i := 1; i <= 8; i++ {
@@ -120,21 +119,31 @@ func GetMemberCounts(r *http.Request) []int {
 	return counts
 }
 
-// getUniqueLocations extracts unique locations from all artists
+// GetUniqueLocations extracts unique locations from all artists
 func GetUniqueLocations(artists []models.Artist) []string {
 	locationMap := make(map[string]bool)
-
 	for _, artist := range artists {
 		for _, location := range artist.LocationsList {
 			locationMap[location] = true
 		}
 	}
-
-	// Convert map to sorted slice
 	var locations []string
 	for location := range locationMap {
 		locations = append(locations, location)
 	}
 	sort.Strings(locations)
 	return locations
+}
+
+// Helper function to convert Artists to ArtistCards
+func ConvertToCards(artists []models.Artist) []models.ArtistCard {
+	cards := make([]models.ArtistCard, len(artists))
+	for i, artist := range artists {
+		cards[i] = models.ArtistCard{
+			ID:    artist.ID,
+			Name:  artist.Name,
+			Image: artist.Image,
+		}
+	}
+	return cards
 }

@@ -43,7 +43,6 @@ func SearchHandler(w http.ResponseWriter, r *http.Request) {
 		data := models.SearchData{
 			Query:   query,
 			Results: results,
-			ShowAll: false,
 		}
 
 		if err := tmpl.Execute(w, data); err != nil {
@@ -63,7 +62,6 @@ func SearchHandler(w http.ResponseWriter, r *http.Request) {
 	data := models.SearchData{
 		Query:   "",
 		Results: nil,
-		ShowAll: true,
 	}
 
 	if err := tmpl.Execute(w, data); err != nil {

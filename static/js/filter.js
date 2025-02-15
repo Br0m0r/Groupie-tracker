@@ -1,38 +1,3 @@
-//clear filters button  !!!
-document.addEventListener('DOMContentLoaded', () => {
-    // Get the clear button and filter form
-    const clearButton = document.querySelector('.clear-filters');
-    const filterForm = document.getElementById('filter-form');
-
-    if (clearButton && filterForm) {
-        clearButton.addEventListener('click', (e) => {
-            e.preventDefault(); // Prevent the default reset behavior
-
-            // Clear all checkboxes
-            filterForm.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
-                checkbox.checked = false;
-            });
-
-            // Clear all number inputs and set to default values
-            filterForm.querySelectorAll('input[type="number"]').forEach(input => {
-                if (input.name.includes('creation')) {
-                    input.value = input.name.includes('start') ? '1950' : '2024';
-                } else if (input.name.includes('album')) {
-                    input.value = input.name.includes('start') ? '1950' : '2024';
-                }
-            });
-
-            // Clear search input if exists
-            const searchInput = filterForm.querySelector('.location-search-input');
-            if (searchInput) {
-                searchInput.value = '';
-            }
-
-            // Submit the form to refresh with cleared filters
-            filterForm.submit();
-        });
-    }
-});
 document.addEventListener('DOMContentLoaded', () => {
     // Clear filters functionality
     const clearButton = document.querySelector('.clear-filters');
@@ -66,7 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Range slider functionality
+    // Setup range slider functionality
     function setupRangeSlider(startClass, endClass, startValueId, endValueId) {
         const startSlider = document.querySelector(`.${startClass}`);
         const endSlider = document.querySelector(`.${endClass}`);
@@ -95,19 +60,38 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Setup both range sliders
-    setupRangeSlider('creation-start', 'creation-end', 'creation-start-value', 'creation-end-value');
-    setupRangeSlider('album-start', 'album-end', 'album-start-value', 'album-end-value');
+    setupRangeSlider(
+        'creation-start', 
+        'creation-end', 
+        'creation-start-value', 
+        'creation-end-value'
+    );
+    
+    setupRangeSlider(
+        'album-start', 
+        'album-end', 
+        'album-start-value', 
+        'album-end-value'
+    );
 
-    // Initial update of range values
+    // Update all range values displays
     function updateRangeValues() {
-        document.getElementById('creation-start-value').textContent = document.querySelector('.creation-start').value;
-        document.getElementById('creation-end-value').textContent = document.querySelector('.creation-end').value;
-        document.getElementById('album-start-value').textContent = document.querySelector('.album-start').value;
-        document.getElementById('album-end-value').textContent = document.querySelector('.album-end').value;
+        const displays = {
+            'creation-start-value': '.creation-start',
+            'creation-end-value': '.creation-end',
+            'album-start-value': '.album-start',
+            'album-end-value': '.album-end'
+        };
+
+        Object.entries(displays).forEach(([displayId, sliderClass]) => {
+            const display = document.getElementById(displayId);
+            const slider = document.querySelector(sliderClass);
+            if (display && slider) {
+                display.textContent = slider.value;
+            }
+        });
     }
 
+    // Initialize range values
     updateRangeValues();
 });
-
-
-

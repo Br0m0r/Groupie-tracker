@@ -12,5 +12,4 @@ type SearchResult struct {
 type SearchData struct {
 	Query   string
 	Results []SearchResult
-	ShowAll bool
 }

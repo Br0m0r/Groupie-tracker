@@ -21,76 +21,39 @@ func Initialize(ds *store.DataStore) {
 
 // HomeHandler serves the main page with artist listings
 func HomeHandler(w http.ResponseWriter, r *http.Request) {
+	// Check for valid path
 	if r.URL.Path != "/" {
 		ErrorHandler(w, ErrNotFound, "Page not exist")
 		return
 	}
 
-	// Get all artists for unique locations
+	// Get data for initial page load
 	allArtists := dataStore.GetAllArtists()
 
-	// Prepare data for template including filter data
+	// Create initial filter data with default values
 	data := models.FilterData{
 		Artists:         dataStore.GetArtistCards(),
 		UniqueLocations: utils.GetUniqueLocations(allArtists),
-		SelectedFilters: models.FilterParams{
-			CreationStart:  1950,
-			CreationEnd:    2024,
-			AlbumStartYear: 1950,
-			AlbumEndYear:   2024,
-			MemberCounts:   []int{},    // Empty slice for initial state
-			Locations:      []string{}, // Empty slice for initial state
-		},
-		TotalResults: len(dataStore.GetArtistCards()),
+		SelectedFilters: getDefaultFilterParams(),
+		TotalResults:    len(allArtists),
+		CurrentPath:     r.URL.Path,
 	}
 
-	// Define template functions
-	funcMap := template.FuncMap{
-		"iterate": func(start, end int) []int {
-			var result []int
-			for i := start; i <= end; i++ {
-				result = append(result, i)
-			}
-			return result
-		},
-		"contains": func(slice interface{}, item interface{}) bool {
-			switch slice := slice.(type) {
-			case []int:
-				itemInt, ok := item.(int)
-				if !ok {
-					return false
-				}
-				for _, s := range slice {
-					if s == itemInt {
-						return true
-					}
-				}
-			case []string:
-				itemStr, ok := item.(string)
-				if !ok {
-					return false
-				}
-				for _, s := range slice {
-					if s == itemStr {
-						return true
-					}
-				}
-			}
-			return false
-		},
-	}
-
-	// Parse template with functions
-	tmpl, err := template.New("index.html").Funcs(funcMap).ParseFiles("templates/index.html")
-	if err != nil {
-		ErrorHandler(w, ErrInternalServer, "Failed to load template")
+	// Use the existing executeFilterTemplate function
+	if err := executeFilterTemplate(w, data); err != nil {
+		ErrorHandler(w, ErrInternalServer, "Failed to process template")
 		return
 	}
+}
 
-	// Execute template with data
-	if err := tmpl.Execute(w, data); err != nil {
-		ErrorHandler(w, ErrInternalServer, "Failed to execute template")
-		return
+func getDefaultFilterParams() models.FilterParams {
+	return models.FilterParams{
+		CreationStart:  1950,
+		CreationEnd:    2024,
+		AlbumStartYear: 1950,
+		AlbumEndYear:   2024,
+		MemberCounts:   []int{},    // Empty slice for initial state
+		Locations:      []string{}, // Empty slice for initial state
 	}
 }
 
