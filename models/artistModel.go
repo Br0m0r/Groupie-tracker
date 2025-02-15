@@ -13,10 +13,10 @@ type Artist struct {
 	ConcertDates string `json:"concertDates"`
 	Relations    string `json:"relations"`
 	// These store the actual data after fetching from URLs
-	LocationsList []string            `json:"-"`
-	LocationData  map[string][]string `json:"-"` // maps states to their cities
-	DatesList     []string            `json:"-"`
-	RelationsList map[string][]string `json:"-"`
+	LocationsList        []string            `json:"-"`
+	LocationStatesCities map[string][]string `json:"-"` // maps states to their cities from geography
+	DatesList            []string            `json:"-"`
+	RelationsList        map[string][]string `json:"-"`
 }
 
 type ArtistCard struct {

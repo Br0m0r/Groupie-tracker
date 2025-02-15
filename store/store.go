@@ -63,7 +63,7 @@ func (ds *DataStore) Initialize() error {
 		wg.Add(1)
 		go func(artist *models.Artist) {
 			defer wg.Done()
-			artist.LocationData = make(map[string][]string)
+			artist.LocationStatesCities = make(map[string][]string)
 
 			// Fetch locations
 			var location models.Location
@@ -88,7 +88,7 @@ func (ds *DataStore) Initialize() error {
 				for state, cities := range utils.StateCityMap {
 					for _, city := range cities {
 						if formattedLoc == city {
-							artist.LocationData[state] = append(artist.LocationData[state], city)
+							artist.LocationStatesCities[state] = append(artist.LocationStatesCities[state], city)
 						}
 					}
 				}

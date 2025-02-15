@@ -18,10 +18,10 @@ var StateCityMap = map[string][]string{
 	"North Carolina, Usa": {"Charlotte, Usa", "Columbia, Usa"},
 	"Louisiana, Usa":      {"New Orleans, Usa"},
 	"Wisconsin, Usa":      {"Madison, Usa"},
-	"Nevada":              {"Las Vegas"},
+	"Nevada, Usa":         {"Las Vegas, Usa"},
 	// Australian states and cities
-	"Victoria":          {"Melbourne", "West Melbourne"},
-	"New South Wales":   {"Sydney"},
-	"Queensland":        {"Brisbane"},
-	"Western Australia": {"Burswood"},
+	"Victoria, Australia":          {"Melbourne, Australia", "West Melbourne, Australia"},
+	"New South Wales, Australia":   {"Sydney, Australia"},
+	"Queensland, Australia":        {"Brisbane, Australia"},
+	"Western Australia, Australia": {"Burswood, Australia"},
 }

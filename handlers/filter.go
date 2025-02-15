@@ -95,40 +95,28 @@ func (af *ArtistFilter) matchesCreationDate(artist models.Artist) bool {
 
 // matchesLocation checks if artist matches location filters
 func (af *ArtistFilter) matchesLocation(artist models.Artist) bool {
+	// If no locations are selected in filter, return true
 	if len(af.params.Locations) == 0 {
 		return true
 	}
 
 	for _, filterLocation := range af.params.Locations {
-		// Check direct location matches
+		filterLocationLower := strings.ToLower(filterLocation)
+
+		// Method 1: Check direct matches in LocationsList
 		for _, artistLocation := range artist.LocationsList {
-			if strings.Contains(
-				strings.ToLower(artistLocation),
-				strings.ToLower(filterLocation),
-			) {
+			if strings.Contains(strings.ToLower(artistLocation), filterLocationLower) {
 				return true
 			}
 		}
 
-		// Check state-city relationships
-		if cities, isState := utils.StateCityMap[filterLocation]; isState {
-			for _, city := range cities {
-				if af.hasLocation(artist, city) {
-					return true
-				}
-			}
-		}
-	}
-	return false
-}
-
-// hasLocation checks if artist has a specific location
-func (af *ArtistFilter) hasLocation(artist models.Artist, location string) bool {
-	for _, artistLocation := range artist.LocationsList {
-		if artistLocation == location {
+		// Method 2: Check state-city mapping
+		// If artist has cities in this state, return true
+		if citiesInState, exists := artist.LocationStatesCities[filterLocation]; exists && len(citiesInState) > 0 {
 			return true
 		}
 	}
+
 	return false
 }
 
