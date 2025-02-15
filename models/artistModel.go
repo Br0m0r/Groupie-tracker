@@ -1,6 +1,7 @@
 // models/artist.go
 package models
 
+// The basic artsit model that contains all  the data for an artist
 type Artist struct {
 	ID           int      `json:"id"`
 	Image        string   `json:"image"`
@@ -19,6 +20,7 @@ type Artist struct {
 	RelationsList        map[string][]string `json:"-"`
 }
 
+// The artist card model that contains only the basic data for an artist for index page
 type ArtistCard struct {
 	ID    int    `json:"id"`
 	Name  string `json:"name"`
@@ -26,17 +28,13 @@ type ArtistCard struct {
 }
 
 type Location struct {
-	ID        int      `json:"id"`
 	Locations []string `json:"locations"`
-	Index     []int    `json:"index,omitempty"`
 }
 
 type Date struct {
-	ID    int      `json:"id"`
 	Dates []string `json:"dates"`
 }
 
 type Relation struct {
-	ID             int                 `json:"id"`
 	DatesLocations map[string][]string `json:"datesLocations"`
 }
