@@ -69,10 +69,12 @@
     line-height: 1;
     height: 300;
 }
+
 .checkbox-label input[type="checkbox"] {
     margin-top: 0.2rem;
     flex-shrink: 0;
 }
+
 /* Range Slider */
 .range-slider {
     flex: 1;
@@ -146,6 +148,7 @@
 
 /* Filter Actions */
 .filter-actions {
+    
     display: flex;
     justify-content: center;
     gap: 0.5rem;
@@ -177,6 +180,35 @@ input[type="checkbox"] {
     width: 14px;
     height: 14px;
     margin-right: 6px;
+}
+
+/* Results Counter */
+.results-counter {
+    text-align: center;
+    padding: 0.75rem;
+    color: var(--text-light);
+    font-size: 0.9rem;
+}
+
+/* No Results Message */
+.no-results-message {
+    grid-column: 1 / -1;  /* Spans all columns */
+    text-align: center;
+    padding: 3rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.no-results-message h2 {
+    color: var(--primary-color);
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.no-results-message p {
+    color: var(--text-light);
+    font-size: 1rem;
 }
 
 /* Responsive Design */
@@ -220,82 +252,11 @@ input[type="checkbox"] {
 
     .filter-actions {
         flex-direction: column;
+        
     }
 
     .clear-filters,
     .apply-filters {
         width: 100%;
     }
-}
-
-.no-results-message {
-    grid-column: 1 / -1;  /* Spans all columns */
-    text-align: center;
-    padding: 3rem;
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 1rem;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.no-results-message h2 {
-    color: var(--primary-color);
-    font-size: 1.5rem;
-    margin-bottom: 0.5rem;
-}
-
-.no-results-message p {
-    color: var(--text-light);
-    font-size: 1rem;
-}
-
-
-
-
-
-.menu-bar {
-    background: #f0f0f0;
-    padding: 5px;
-    border: 1px solid #ccc;
-}
-
-.menu-item {
-    display: inline-block;
-    position: relative;
-    padding: 8px 15px;
-    cursor: pointer;
-    background: #f0f0f0;
-}
-
-.menu-item:hover {
-    background: #e0e0e0;
-}
-
-.submenu {
-    display: none;
-    position: absolute;
-    top: 100%;
-    left: 0;
-    background: white;
-    border: 1px solid #ccc;
-    box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
-    min-width: 150px;
-}
-
-.menu-item:hover .submenu {
-    display: block;
-}
-
-.submenu-item {
-    padding: 8px 15px;
-    cursor: pointer;
-}
-
-.submenu-item:hover {
-    background: #e0e0e0;
-}
-.results-counter {
-    text-align: center;
-    padding: 0.75rem;
-    color: var(--text-light);
-    font-size: 0.9rem;
 }

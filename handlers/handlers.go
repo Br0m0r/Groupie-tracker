@@ -46,14 +46,15 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// Return the default filter parameters.
 func getDefaultFilterParams() models.FilterParams {
 	return models.FilterParams{
 		CreationStart:  1950,
 		CreationEnd:    2024,
 		AlbumStartYear: 1950,
 		AlbumEndYear:   2024,
-		MemberCounts:   []int{},    // Empty slice for initial state
-		Locations:      []string{}, // Empty slice for initial state
+		MemberCounts:   []int{},    // Empty slice - no members selected
+		Locations:      []string{}, // Empty slice - no locations selected
 	}
 }
 

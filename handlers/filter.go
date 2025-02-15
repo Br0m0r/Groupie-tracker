@@ -27,7 +27,7 @@ func FilterHandler(w http.ResponseWriter, r *http.Request) {
 	data := models.FilterData{
 		Artists:         utils.ConvertToCards(filteredArtists),
 		UniqueLocations: utils.GetUniqueLocations(allArtists),
-		SelectedFilters: params,
+		SelectedFilters: getDefaultFilterParams(),
 		TotalResults:    len(filteredArtists),
 		CurrentPath:     r.URL.Path,
 	}
