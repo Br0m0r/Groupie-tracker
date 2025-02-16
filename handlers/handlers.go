@@ -26,15 +26,12 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Get data for initial page load
-	allArtists := dataStore.GetAllArtists()
-
 	// Create initial filter data with default values
 	data := models.FilterData{
 		Artists:         dataStore.GetArtistCards(),
 		UniqueLocations: dataStore.UniqueLocations,
 		SelectedFilters: getDefaultFilterParams(),
-		TotalResults:    len(allArtists),
+		TotalResults:    len(dataStore.GetArtistCards()),
 		CurrentPath:     r.URL.Path,
 	}
 

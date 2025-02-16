@@ -10,6 +10,7 @@ import (
 )
 
 // FilterHandler processes filter requests and returns filtered artists
+// In handlers/filter.go
 func FilterHandler(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
 		ErrorHandler(w, ErrBadRequest, "Invalid form data")
@@ -19,24 +20,40 @@ func FilterHandler(w http.ResponseWriter, r *http.Request) {
 	// Extract filter parameters
 	params := extractFilterParams(r)
 
-	// Get and filter artists
+	// Check if params match default params
+	defaultParams := getDefaultFilterParams()
+	if isDefaultParams(params, defaultParams) {
+		// Redirect to home page instead of processing the filter
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+		return
+	}
+
+	// Continue with filtering only if params differ from default
 	allArtists := dataStore.GetAllArtists()
 	filteredArtists := NewArtistFilter(params).Filter(allArtists)
 
-	// Prepare template data
 	data := models.FilterData{
 		Artists:         utils.ConvertToCards(filteredArtists),
 		UniqueLocations: dataStore.UniqueLocations,
-		SelectedFilters: getDefaultFilterParams(),
+		SelectedFilters: params,
 		TotalResults:    len(filteredArtists),
 		CurrentPath:     r.URL.Path,
 	}
 
-	// Execute template
 	if err := executeFilterTemplate(w, data); err != nil {
 		ErrorHandler(w, ErrInternalServer, "Failed to process template")
 		return
 	}
+}
+
+// Add helper function to compare filter params
+func isDefaultParams(params, defaultParams models.FilterParams) bool {
+	return len(params.MemberCounts) == 0 &&
+		len(params.Locations) == 0 &&
+		params.CreationStart == defaultParams.CreationStart &&
+		params.CreationEnd == defaultParams.CreationEnd &&
+		params.AlbumStartYear == defaultParams.AlbumStartYear &&
+		params.AlbumEndYear == defaultParams.AlbumEndYear
 }
 
 // ArtistFilter encapsulates filtering logic
