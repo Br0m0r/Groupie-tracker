@@ -8,6 +8,7 @@ import (
 
 	"groupie/models"
 	"groupie/store"
+	"groupie/utils"
 )
 
 // dataStore holds the application's data layer
@@ -30,7 +31,7 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 	data := models.FilterData{
 		Artists:         dataStore.GetArtistCards(),
 		UniqueLocations: dataStore.UniqueLocations,
-		SelectedFilters: getDefaultFilterParams(),
+		SelectedFilters: utils.GetDefaultFilterParams(),
 		TotalResults:    len(dataStore.GetArtistCards()),
 		CurrentPath:     r.URL.Path,
 	}
@@ -43,16 +44,6 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // Return the default filter parameters.
-func getDefaultFilterParams() models.FilterParams {
-	return models.FilterParams{
-		CreationStart:  1950,
-		CreationEnd:    2024,
-		AlbumStartYear: 1950,
-		AlbumEndYear:   2024,
-		MemberCounts:   []int{},    // Empty slice - no members selected
-		Locations:      []string{}, // Empty slice - no locations selected
-	}
-}
 
 // ArtistHandler serves individual artist details pages
 func ArtistHandler(w http.ResponseWriter, r *http.Request) {

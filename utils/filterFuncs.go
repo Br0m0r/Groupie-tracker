@@ -57,3 +57,15 @@ func ConvertToCards(artists []models.Artist) []models.ArtistCard {
 	}
 	return cards
 }
+
+// Return the default filter parameters.
+func GetDefaultFilterParams() models.FilterParams {
+	return models.FilterParams{
+		CreationStart:  1950,
+		CreationEnd:    2024,
+		AlbumStartYear: 1950,
+		AlbumEndYear:   2024,
+		MemberCounts:   []int{},    // Empty slice - no members selected
+		Locations:      []string{}, // Empty slice - no locations selected
+	}
+}

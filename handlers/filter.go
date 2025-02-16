@@ -21,7 +21,7 @@ func FilterHandler(w http.ResponseWriter, r *http.Request) {
 	params := extractFilterParams(r)
 
 	// Check if params match default params
-	defaultParams := getDefaultFilterParams()
+	defaultParams := utils.GetDefaultFilterParams()
 	if isDefaultParams(params, defaultParams) {
 		// Redirect to home page instead of processing the filter
 		http.Redirect(w, r, "/", http.StatusSeeOther)
