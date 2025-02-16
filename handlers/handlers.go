@@ -8,7 +8,6 @@ import (
 
 	"groupie/models"
 	"groupie/store"
-	"groupie/utils"
 )
 
 // dataStore holds the application's data layer
@@ -33,7 +32,7 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 	// Create initial filter data with default values
 	data := models.FilterData{
 		Artists:         dataStore.GetArtistCards(),
-		UniqueLocations: utils.GetUniqueLocations(allArtists),
+		UniqueLocations: dataStore.UniqueLocations,
 		SelectedFilters: getDefaultFilterParams(),
 		TotalResults:    len(allArtists),
 		CurrentPath:     r.URL.Path,

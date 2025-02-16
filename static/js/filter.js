@@ -1,33 +1,10 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // Clear filters functionality
+    // Clear filters functionality - simply redirects to /filter
     const clearButton = document.querySelector('.clear-filters');
-    const filterForm = document.getElementById('filter-form');
-
-    if (clearButton && filterForm) {
+    if (clearButton) {
         clearButton.addEventListener('click', (e) => {
             e.preventDefault();
-            
-            // Clear all checkboxes
-            filterForm.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
-                checkbox.checked = false;
-            });
-
-            // Reset range sliders to defaults
-            document.querySelector('.creation-start').value = '1950';
-            document.querySelector('.creation-end').value = '2024';
-            document.querySelector('.album-start').value = '1950';
-            document.querySelector('.album-end').value = '2024';
-            
-            // Update range value displays
-            updateRangeValues();
-
-            // Clear search input if exists
-            const searchInput = filterForm.querySelector('.location-search-input');
-            if (searchInput) {
-                searchInput.value = '';
-            }
-
-            filterForm.submit();
+            window.location.href = '/filter';
         });
     }
 
@@ -73,25 +50,4 @@ document.addEventListener('DOMContentLoaded', () => {
         'album-start-value', 
         'album-end-value'
     );
-
-    // Update all range values displays
-    function updateRangeValues() {
-        const displays = {
-            'creation-start-value': '.creation-start',
-            'creation-end-value': '.creation-end',
-            'album-start-value': '.album-start',
-            'album-end-value': '.album-end'
-        };
-
-        Object.entries(displays).forEach(([displayId, sliderClass]) => {
-            const display = document.getElementById(displayId);
-            const slider = document.querySelector(sliderClass);
-            if (display && slider) {
-                display.textContent = slider.value;
-            }
-        });
-    }
-
-    // Initialize range values
-    updateRangeValues();
 });

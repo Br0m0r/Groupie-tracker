@@ -26,7 +26,7 @@ func FilterHandler(w http.ResponseWriter, r *http.Request) {
 	// Prepare template data
 	data := models.FilterData{
 		Artists:         utils.ConvertToCards(filteredArtists),
-		UniqueLocations: utils.GetUniqueLocations(allArtists),
+		UniqueLocations: dataStore.UniqueLocations,
 		SelectedFilters: getDefaultFilterParams(),
 		TotalResults:    len(filteredArtists),
 		CurrentPath:     r.URL.Path,

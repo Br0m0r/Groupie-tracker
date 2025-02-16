@@ -3,7 +3,6 @@ package utils
 import (
 	"fmt"
 	"net/http"
-	"sort"
 	"strconv"
 	"strings"
 
@@ -44,22 +43,6 @@ func GetMemberCounts(r *http.Request) []int {
 		}
 	}
 	return counts
-}
-
-// GetUniqueLocations extracts unique locations from all artists
-func GetUniqueLocations(artists []models.Artist) []string {
-	locationMap := make(map[string]bool)
-	for _, artist := range artists {
-		for _, location := range artist.LocationsList {
-			locationMap[location] = true
-		}
-	}
-	var locations []string
-	for location := range locationMap {
-		locations = append(locations, location)
-	}
-	sort.Strings(locations)
-	return locations
 }
 
 // Helper function to convert Artists to ArtistCards

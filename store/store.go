@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"sort"
 	"sync"
 
 	"groupie/models"
@@ -19,8 +20,9 @@ type ApiIndex struct {
 }
 
 type DataStore struct {
-	Artists []models.Artist
-	mu      sync.RWMutex
+	Artists         []models.Artist
+	UniqueLocations []string
+	mu              sync.RWMutex
 }
 
 func New() *DataStore { // constructor for new Struct Datastore { Artist []model.Artist }
@@ -141,6 +143,20 @@ func (ds *DataStore) Initialize() error {
 	// Store the data
 	ds.mu.Lock()
 	ds.Artists = artists
+	// Calculate and store unique locations
+	locationMap := make(map[string]bool)
+	for _, artist := range artists {
+		for _, location := range artist.LocationsList {
+			locationMap[location] = true
+		}
+	}
+
+	// Convert map to sorted slice
+	ds.UniqueLocations = make([]string, 0, len(locationMap))
+	for location := range locationMap {
+		ds.UniqueLocations = append(ds.UniqueLocations, location)
+	}
+	sort.Strings(ds.UniqueLocations)
 	ds.mu.Unlock()
 
 	return nil
