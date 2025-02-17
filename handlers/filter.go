@@ -166,31 +166,6 @@ func executeFilterTemplate(w http.ResponseWriter, data models.FilterData) error 
 			}
 			return result
 		},
-		"contains": func(slice interface{}, item interface{}) bool {
-			switch slice := slice.(type) {
-			case []int:
-				itemInt, ok := item.(int)
-				if !ok {
-					return false
-				}
-				for _, s := range slice {
-					if s == itemInt {
-						return true
-					}
-				}
-			case []string:
-				itemStr, ok := item.(string)
-				if !ok {
-					return false
-				}
-				for _, s := range slice {
-					if s == itemStr {
-						return true
-					}
-				}
-			}
-			return false
-		},
 	}
 
 	tmpl, err := template.New("index.html").Funcs(funcMap).ParseFiles("templates/index.html")
