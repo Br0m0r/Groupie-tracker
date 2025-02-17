@@ -156,7 +156,7 @@ func extractFilterParams(r *http.Request) models.FilterParams {
 	}
 }
 
-// Helper function to execute the filter template
+// Helper function to execute the filter template .
 func executeFilterTemplate(w http.ResponseWriter, data models.FilterData) error {
 	funcMap := template.FuncMap{
 		"iterate": func(start, end int) []int {
