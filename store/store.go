@@ -162,7 +162,6 @@ func (ds *DataStore) Initialize() error {
 	return nil
 }
 
-// The rest of your DataStore methods remain the same
 func (ds *DataStore) GetArtistCards() []models.ArtistCard {
 	ds.mu.RLock()
 	defer ds.mu.RUnlock()

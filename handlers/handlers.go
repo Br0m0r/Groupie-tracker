@@ -43,8 +43,6 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// Return the default filter parameters.
-
 // ArtistHandler serves individual artist details pages
 func ArtistHandler(w http.ResponseWriter, r *http.Request) {
 	// Extract and validate artist ID
