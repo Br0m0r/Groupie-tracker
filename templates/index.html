@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Groupie Tracker</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="/static/css/search.css">
+    <link rel="stylesheet" href="/static/css/filter.css">
+
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><a href="/" class="title-link">GROUPIE TRACKER</a></h1>
+            <p>Discover Artists and Their Concert History</p>
+            
+            <!-- Search form with live suggestions -->
+            <form class="search-form" action="/search" method="GET">
+                <div class="search-container">
+                    <input type="text" 
+                           class="search-input"
+                           name="q" 
+                           placeholder="Search artists, members, locations..."
+                           autocomplete="off">
+                    <div class="search-suggestions">
+                        <div class="suggestions-list-container">
+                            <div class="suggestions-list"></div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+
+            <!-- Filter Panel -->
+            <div class="filter-panel">
+                <form id="filter-form" action="/filter" method="GET">
+                    <div class="filters-container">
+                        <!-- Member checkboxes -->
+                        <div class="filter-box members-box">
+                            <h3>Number of Members</h3>
+                            <div class="members-columns">
+                                <div class="members-column">
+                                    {{range $i := iterate 1 4}}
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" name="members_{{$i}}" value="{{$i}}">
+                                        {{$i}}
+                                    </label>
+                                    {{end}}
+                                </div>
+                                <div class="members-column">
+                                    {{range $i := iterate 5 8}}
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" name="members_{{$i}}" value="{{$i}}">
+                                        {{$i}}
+                                    </label>
+                                    {{end}}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Creation Date Range -->
+                        <div class="filter-box">
+                            <h3>Creation Date</h3>
+                            <div class="range-slider">
+                                <div class="range-values">
+                                    <span id="creation-start-value">1950</span>
+                                    <span id="creation-end-value">2024</span>
+                                </div>
+                                <div class="range-inputs">
+                                    <input type="range" name="creation_start" min="1950" max="2024" 
+                                        value="1950" class="range creation-start">
+                                    <input type="range" name="creation_end" min="1950" max="2024" 
+                                        value="2024" class="range creation-end">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- First Album Year Range -->
+                        <div class="filter-box">
+                            <h3>First Album Year</h3>
+                            <div class="range-slider">
+                                <div class="range-values">
+                                    <span id="album-start-value">1950</span>
+                                    <span id="album-end-value">2024</span>
+                                </div>
+                                <div class="range-inputs">
+                                    <input type="range" name="album_start" min="1950" max="2024" 
+                                        value="1950" class="range album-start">
+                                    <input type="range" name="album_end" min="1950" max="2024" 
+                                        value="2024" class="range album-end">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Locations Filter -->
+                        <div class="filter-box">
+                            <h3>Concert Locations</h3>
+                            <div class="checkbox-group scrollable">
+                                {{range .UniqueLocations}}
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="location" value="{{.}}">
+                                    {{.}}
+                                </label>
+                                {{end}}
+                            </div>
+                        </div>
+
+                    <div class="filter-actions">
+                        <button type="submit" class="apply-filters">Apply Filters</button>
+                        <button type="button" class="clear-filters">Clear All</button>
+                    </div>
+                    {{if eq .CurrentPath "/filter"}}
+                        <div class="results-counter">
+                            Found {{.TotalResults}} artist{{if ne .TotalResults 1}}s{{end}}
+                        </div>
+                    {{end}}
+                </form>
+            </div>
+        </header>
+
+        <main>
+            <div class="artists-grid">
+                {{if .Artists}}
+                    {{range .Artists}}
+                    <div class="artist-card">
+                        <a href="/artist?id={{.ID}}" class="artist-link">
+                            <div class="image-container">
+                                <img src="{{.Image}}" alt="{{.Name}}" loading="lazy">
+                            </div>
+                            <div class="artist-info">
+                                <h2>{{.Name}}</h2>
+                            </div>
+                        </a>
+                    </div>
+                    {{end}}
+                {{else}}
+                    <div class="no-results-message">
+                        <h2>No artists found</h2>
+                        <p>Try adjusting your filter criteria</p>
+                    </div>
+                {{end}}
+            </div>
+        </main>
+
+        <footer>
+            <p>© 2024 Groupie Tracker. All rights reserved.</p>
+        </footer>
+    </div>
+    <script src="/static/js/main.js"></script>
+    <script src="/static/js/search.js"></script>
+    <script src="/static/js/filter.js"></script>
+</body>
+</html>
