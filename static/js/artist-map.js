@@ -1,11 +1,19 @@
 document.addEventListener('DOMContentLoaded', async function() {
-    console.log('Map initialization started');
-    // Initialize the map
-    const map = L.map('artist-map').setView([0, 0], 2);
+    // Initialize the map centered at 0,0 (the middle of the world) with zoom level 1
+    const map = L.map('artist-map', {
+        center: [20, 0],  // Slightly above equator for better perspective
+        zoom: 2,
+        minZoom: 2,      // Prevent zooming out too far
+        maxBounds: [      // Restrict panning to reasonable bounds
+            [-90, -180],  // Southwest corner
+            [90, 180]     // Northeast corner
+        ]
+    });
     
     // Add OpenStreetMap tiles
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors'
+        attribution: '© OpenStreetMap contributors',
+        noWrap: true     // Prevents the map from repeating horizontally
     }).addTo(map);
 
     // Get artist ID from URL
@@ -17,10 +25,8 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     try {
         // Fetch coordinates from our backend
-        console.log('Fetching coordinates for artist:', artistId);
         const response = await fetch(`/api/coordinates?id=${artistId}`);
         const coordinates = await response.json();
-        console.log('Received coordinates:', coordinates);
 
         // Add markers for each location
         coordinates.forEach(coord => {
@@ -30,11 +36,12 @@ document.addEventListener('DOMContentLoaded', async function() {
             markerGroup.addLayer(marker);
         });
 
-        // Fit map to show all markers
+        // Only adjust bounds if we have markers
         if (markerGroup.getLayers().length > 0) {
             markerGroup.addTo(map);
             map.fitBounds(markerGroup.getBounds(), {
-                padding: [50, 50]
+                padding: [50, 50],
+                maxZoom: 5  // Don't zoom in too far when fitting bounds
             });
         }
     } catch (error) {
