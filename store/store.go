@@ -11,18 +11,14 @@ import (
 	"groupie/utils"
 )
 
-// ApiIndex holds the structure of the main API response
-type ApiIndex struct {
-	Artists string `json:"artists"`
-	// Locations string `json:"locations"` }
-	// Dates     string `json:"dates`      } those are not needed!!!
-	// Relations string `json:"relation"`  }
-}
-
 type DataStore struct {
 	Artists         []models.Artist
 	UniqueLocations []string
 	mu              sync.RWMutex
+	CoordinateCache struct {
+		data map[string]models.Coordinates
+		mu   sync.RWMutex
+	}
 }
 
 func New() *DataStore { // constructor for new Struct Datastore { Artist []model.Artist }
@@ -33,7 +29,7 @@ func New() *DataStore { // constructor for new Struct Datastore { Artist []model
 
 func (ds *DataStore) Initialize() error {
 	// First get the API index
-	var index ApiIndex
+	var index models.ApiIndex
 	resp, err := http.Get("https://groupietrackers.herokuapp.com/api")
 	if err != nil {
 		return fmt.Errorf("failed to fetch API index: %v", err)
@@ -158,6 +154,7 @@ func (ds *DataStore) Initialize() error {
 	}
 	sort.Strings(ds.UniqueLocations)
 	ds.mu.Unlock()
+	ds.loadCoordinatesInBackground()
 
 	return nil
 }
