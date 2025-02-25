@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     const artistId = urlParams.get('id');
 
     // Create a marker group
-    const markerGroup = L.featureGroup();
+//const markerGroup = L.featureGroup();
 
     try {
         // Fetch coordinates from our backend
@@ -33,17 +33,17 @@ document.addEventListener('DOMContentLoaded', async function() {
             const marker = L.marker([coord.lat, coord.lon])
                 .bindPopup(`<b>${coord.address}</b>`)
                 .addTo(map);
-            markerGroup.addLayer(marker);
+         //   markerGroup.addLayer(marker);
         });
 
         // Only adjust bounds if we have markers
-        if (markerGroup.getLayers().length > 0) {
-            markerGroup.addTo(map);
-            map.fitBounds(markerGroup.getBounds(), {
-                padding: [50, 50],
-                maxZoom: 5  // Don't zoom in too far when fitting bounds
-            });
-        }
+        // if (markerGroup.getLayers().length > 0) {
+        //     markerGroup.addTo(map);
+        //     map.fitBounds(markerGroup.getBounds(), {
+        //         padding: [50, 50],
+        //         maxZoom: 5  // Don't zoom in too far when fitting bounds
+        //     });
+        // }
     } catch (error) {
         console.error('Error fetching coordinates:', error);
     }
