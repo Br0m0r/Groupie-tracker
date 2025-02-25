@@ -46,6 +46,7 @@ func (ds *DataStore) loadCoordinatesInBackground() {
 			ds.CoordinateCache.mu.Lock()
 			ds.CoordinateCache.data[location] = coords
 			ds.CoordinateCache.mu.Unlock()
+			log.Println("new location coordinates added!:", location)
 		}
 		log.Println("Background coordinate loading completed")
 	}()

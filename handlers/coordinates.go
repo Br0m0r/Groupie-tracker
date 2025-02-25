@@ -44,6 +44,7 @@ func GetLocationCoordinates(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 		coordinates = append(coordinates, coords)
+
 	}
 
 	// Send response
