@@ -4,6 +4,7 @@ import (
 	"html/template"
 	"net/http"
 	"strings"
+	"time"
 
 	"groupie/models"
 	"groupie/utils"
@@ -21,7 +22,7 @@ func FilterHandler(w http.ResponseWriter, r *http.Request) {
 	params := extractFilterParams(r)
 
 	// Check if params match default params
-	defaultParams := utils.GetDefaultFilterParams()
+	defaultParams := getDefaultFilterParams()
 	if isDefaultParams(params, defaultParams) {
 		// Redirect to home page instead of processing the filter
 		http.Redirect(w, r, "/", http.StatusSeeOther)
@@ -173,4 +174,18 @@ func executeFilterTemplate(w http.ResponseWriter, data models.FilterData) error 
 	}
 
 	return tmpl.Execute(w, data)
+}
+
+// Return the default filter parameters.
+func getDefaultFilterParams() models.FilterParams {
+	minCreationYear, minFirstAlbum := dataStore.GetMinYears()
+
+	return models.FilterParams{
+		CreationStart:  minCreationYear,
+		CreationEnd:    time.Now().Year(),
+		AlbumStartYear: minFirstAlbum,
+		AlbumEndYear:   time.Now().Year(),
+		MemberCounts:   []int{},    // Empty slice - no members selected
+		Locations:      []string{}, // Empty slice - no locations selected
+	}
 }

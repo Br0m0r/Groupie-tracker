@@ -203,3 +203,34 @@ func (ds *DataStore) GetAllArtists() []models.Artist {
 	copy(artists, ds.Artists)
 	return artists
 }
+
+// GetMinYears returns the minimum year for creation date and minimum year for first albums
+func (ds *DataStore) GetMinYears() (minCreation, minAlbum int) {
+	ds.mu.RLock()
+	defer ds.mu.RUnlock()
+
+	// Set initial values
+	if len(ds.Artists) > 0 {
+		minCreation = ds.Artists[0].CreationDate
+		minAlbum = utils.ExtractYear(ds.Artists[0].FirstAlbum)
+	} else {
+		// Default values if no artists found
+		return 1950, 1950
+	}
+
+	// Find min values only
+	for _, artist := range ds.Artists {
+		// Min creation date
+		if artist.CreationDate < minCreation {
+			minCreation = artist.CreationDate
+		}
+
+		// Min first album year
+		albumYear := utils.ExtractYear(artist.FirstAlbum)
+		if albumYear < minAlbum && albumYear > 0 {
+			minAlbum = albumYear
+		}
+	}
+
+	return minCreation, minAlbum
+}
