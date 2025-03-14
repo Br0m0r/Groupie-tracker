@@ -37,7 +37,6 @@ func FilterHandler(w http.ResponseWriter, r *http.Request) {
 		UniqueLocations: dataStore.UniqueLocations,
 		SelectedFilters: params,
 		TotalResults:    len(filteredArtists),
-		CurrentPath:     r.URL.Path,
 	}
 
 	if err := executeFilterTemplate(w, data); err != nil {

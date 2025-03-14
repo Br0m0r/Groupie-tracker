@@ -3,13 +3,13 @@ package models
 
 // ApiIndex holds the structure of the main API response
 type ApiIndex struct {
-	Artists string `json:"artists"`
-	// Locations string `json:"locations"` }
-	// Dates     string `json:"dates`      } those are not needed!!!
-	// Relations string `json:"relation"`  }
+	Artists   string `json:"artists"`
+	Locations string `json:"locations"`
+	Dates     string `json:"dates"`
+	Relation  string `json:"relation"`
 }
 
-// The basic artsit model that contains all  the data for an artist
+// Artist represents a complete artist with all their information
 type Artist struct {
 	ID           int      `json:"id"`
 	Image        string   `json:"image"`
@@ -17,32 +17,21 @@ type Artist struct {
 	Members      []string `json:"members"`
 	CreationDate int      `json:"creationDate"`
 	FirstAlbum   string   `json:"firstAlbum"`
-	// These are URLs in the initial response
+	// URLs from the initial API response
 	Locations    string `json:"locations"`
 	ConcertDates string `json:"concertDates"`
 	Relations    string `json:"relations"`
-	// These store the actual data after fetching from URLs
+
+	// Processed data (not from direct JSON parsing)
 	LocationsList        []string            `json:"-"`
-	LocationStatesCities map[string][]string `json:"-"` // maps states to their cities from geography
+	LocationStatesCities map[string][]string `json:"-"` // Maps states to cities
 	DatesList            []string            `json:"-"`
-	RelationsList        map[string][]string `json:"-"`
+	RelationsList        map[string][]string `json:"-"` // Maps locations to dates
 }
 
-// The artist card model that contains only the basic data for an artist for index page
+// ArtistCard contains minimal info for list views
 type ArtistCard struct {
 	ID    int    `json:"id"`
 	Name  string `json:"name"`
 	Image string `json:"image"`
-}
-
-type Location struct {
-	Locations []string `json:"locations"`
-}
-
-type Date struct {
-	Dates []string `json:"dates"`
-}
-
-type Relation struct {
-	DatesLocations map[string][]string `json:"datesLocations"`
 }
