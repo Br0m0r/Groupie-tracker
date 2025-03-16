@@ -170,38 +170,62 @@ func (ds *DataStore) Initialize() error {
 	return nil
 }
 
+// GetArtistCards returns a slice of ArtistCard structures,
+// which are simplified representations (ID, Name, Image) of the full Artist data.
+// This function is typically called by the HomeHandler (in handlers.go) to render
+// the homepage with a grid or list of artist cards.
 func (ds *DataStore) GetArtistCards() []models.ArtistCard {
+	// Acquire a read lock to safely access ds.Artists (a slice of models.Artist)
 	ds.mu.RLock()
 	defer ds.mu.RUnlock()
 
+	// Create a slice of ArtistCard (defined in artistModel.go) with the same length as ds.Artists.
 	cards := make([]models.ArtistCard, len(ds.Artists))
+	// Iterate over each Artist (models.Artist) in ds.Artists and extract key fields.
 	for i, artist := range ds.Artists {
 		cards[i] = models.ArtistCard{
-			ID:    artist.ID,
-			Name:  artist.Name,
-			Image: artist.Image,
+			ID:    artist.ID,    // ID from models.Artist is used to set ArtistCard.ID
+			Name:  artist.Name,  // Name from models.Artist is used to set ArtistCard.Name
+			Image: artist.Image, // Image URL from models.Artist is used to set ArtistCard.Image
 		}
 	}
+	// Return the slice of ArtistCard objects for rendering on the homepage.
 	return cards
 }
 
+// GetArtist returns a complete Artist structure for a given artist ID.
+// This function is typically called by the ArtistHandler (in handlers.go) when a user
+// clicks on an artist card or navigates to an artist's detail page.
+// It retrieves the full Artist record (as defined in artistModel.go) with detailed information.
 func (ds *DataStore) GetArtist(id int) (models.Artist, error) {
+	// Acquire a read lock to safely access ds.Artists.
 	ds.mu.RLock()
 	defer ds.mu.RUnlock()
 
+	// Iterate over the slice of models.Artist to find the artist with the matching ID.
 	for _, artist := range ds.Artists {
 		if artist.ID == id {
+			// Return the complete models.Artist record when a match is found.
 			return artist, nil
 		}
 	}
+	// If no matching artist is found, return an empty models.Artist and an error.
 	return models.Artist{}, fmt.Errorf("artist with ID %d not found", id)
 }
 
+// GetAllArtists returns a copy of the complete list of Artist structures.
+// This function is typically called by the SearchHandler (in search.go) for processing
+// search queries and by the FilterHandler (in filter.go) to filter the artist list.
+// It provides the full collection of models.Artist (defined in artistModel.go) for these operations.
 func (ds *DataStore) GetAllArtists() []models.Artist {
+	// Acquire a read lock to safely access ds.Artists.
 	ds.mu.RLock()
 	defer ds.mu.RUnlock()
 
+	// Create a new slice of models.Artist with the same length as ds.Artists.
 	artists := make([]models.Artist, len(ds.Artists))
+	// Copy the content of ds.Artists (slice of models.Artist) into the new slice.
 	copy(artists, ds.Artists)
+	// Return the copied slice to ensure the original data remains unmodified during searches/filters.
 	return artists
 }

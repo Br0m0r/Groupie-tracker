@@ -1,0 +1,14 @@
+{
+    "editor.tokenColorCustomizations": {
+      "textMateRules": [
+        {
+          "scope": "comment",
+          "settings": {
+            "foreground": "#FF7F7F",  // Light red color
+            "fontStyle": "italic"       // Optional styling
+          }
+        }
+      ]
+    }
+  }
+  

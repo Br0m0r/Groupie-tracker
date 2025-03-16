@@ -156,8 +156,9 @@ func extractFilterParams(r *http.Request) models.FilterParams {
 	}
 }
 
-// Helper function to execute the filter template .
+// executeFilterTemplate loads the index.html template and renders it with the given FilterData.
 func executeFilterTemplate(w http.ResponseWriter, data models.FilterData) error {
+	// Define any custom template functions (here, "iterate" for generating ranges).
 	funcMap := template.FuncMap{
 		"iterate": func(start, end int) []int {
 			var result []int
@@ -168,10 +169,13 @@ func executeFilterTemplate(w http.ResponseWriter, data models.FilterData) error 
 		},
 	}
 
+	// Create a new template, add the custom functions, and parse the file.
 	tmpl, err := template.New("index.html").Funcs(funcMap).ParseFiles("templates/index.html")
 	if err != nil {
 		return err
 	}
 
+	// Execute the template, passing the FilterData struct as the context.
+	// The template engine will use this data to fill in the dynamic parts.
 	return tmpl.Execute(w, data)
 }
