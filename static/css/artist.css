@@ -239,6 +239,11 @@
       padding: 1rem;
   }
 
+  .artist-profile-content {
+    display: flex;
+    gap: 2.5rem;
+    flex: 1;
+}
   .nav-buttons {
       flex-direction: row;
       justify-content: center;
@@ -275,5 +280,47 @@
 
   .artist-details p {
       font-size: 1rem;
+  }
+}
+
+#artist-map {
+  width: 900px;
+  height: 550px;
+  border-radius: 1rem;
+  overflow: hidden;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .map-section {
+      padding: 1rem;
+      margin: 1.5rem 0;
+  }
+
+  #artist-map {
+      height: 400px;
+  }
+}
+@media (max-width: 480px) {
+  .map-section {
+      padding: 0.75rem;
+      margin: 1rem 0;
+  }
+
+  #artist-map {
+      height: 300px;
+  }
+}
+
+@media (max-width: 768px) {
+  .artist-profile-content {
+      flex-direction: column;
+  }
+  
+  .artist-image {
+      width: 100%;
+      max-width: 350px;
+      margin: 0 auto;
   }
 }

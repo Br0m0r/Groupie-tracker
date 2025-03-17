@@ -1,12 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // Clear filters functionality - simply redirects to /filter
-    const clearButton = document.querySelector('.clear-filters');
-    if (clearButton) {
-        clearButton.addEventListener('click', (e) => {
-            e.preventDefault();
-            window.location.href = '/filter';
-        });
-    }
+   
 
     // Setup range slider functionality
     function setupRangeSlider(startClass, endClass, startValueId, endValueId) {

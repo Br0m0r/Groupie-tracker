@@ -25,6 +25,7 @@ func setupServer() *http.ServeMux {
 	mux.HandleFunc("/artist", handlers.ArtistHandler)
 	mux.HandleFunc("/search", handlers.SearchHandler)
 	mux.HandleFunc("/filter", handlers.FilterHandler)
+	mux.HandleFunc("/api/coordinates", handlers.GetLocationCoordinates)
 
 	// Static file handling
 	fileServer := http.FileServer(http.Dir("static"))

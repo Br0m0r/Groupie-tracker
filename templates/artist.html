@@ -6,6 +6,9 @@
     <title>{{.Name}} - Artist Details</title>
     <link rel="stylesheet" href="/static/css/style.css">
     <link rel="stylesheet" href="/static/css/artist.css">
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
 </head>
 <body>
     <div class="container">
@@ -18,16 +21,19 @@
         
         <div class="artist-profile">
             <div class="artist-header">
-                <div class="artist-image">
-                    <img src="{{.Image}}" alt="{{.Name}}">
-                </div>
-                <div class="artist-info">
-                    <h1>{{.Name}}</h1>
-                    <div class="artist-details">
-                        <p><strong>Creation Date:</strong> {{.CreationDate}}</p>
-                        <p><strong>First Album:</strong> {{.FirstAlbum}}</p>
+                <div class="artist-profile-content">
+                    <div class="artist-image">
+                        <img src="{{.Image}}" alt="{{.Name}}">
+                    </div>
+                    <div class="artist-info">
+                        <h1>{{.Name}}</h1>
+                        <div class="artist-details">
+                            <p><strong>Creation Date:</strong> {{.CreationDate}}</p>
+                            <p><strong>First Album:</strong> {{.FirstAlbum}}</p>
+                        </div>
                     </div>
                 </div>
+                <div id="artist-map"></div>
             </div>
 
             <div class="members-section">
@@ -82,8 +88,6 @@
             <p>© 2024 Groupie Tracker. All rights reserved.</p>
         </footer>
     </div>
-
-    <script src="/static/js/main.js"></script>
     <script>
         // Show back to results button only if coming from search page
         document.addEventListener('DOMContentLoaded', () => {
@@ -96,5 +100,8 @@
             }
         });
     </script>
+   
+        <script src="/static/js/artist-map.js"></script>
+        <script src="/static/js/main.js"></script>
 </body>
 </html>

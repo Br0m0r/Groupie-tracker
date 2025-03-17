@@ -157,7 +157,7 @@
     margin-top: 1rem;
 }
 
-.clear-filters,
+
 .apply-filters {
     padding: 0.35rem 0.75rem;
     font-size: 0.8rem;
@@ -169,7 +169,7 @@
     transition: background-color 0.3s ease;
 }
 
-.clear-filters:hover,
+
 .apply-filters:hover {
     background: var(--primary-dark);
 }
@@ -255,7 +255,7 @@ input[type="checkbox"] {
         
     }
 
-    .clear-filters,
+
     .apply-filters {
         width: 100%;
     }
