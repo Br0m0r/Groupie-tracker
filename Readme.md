@@ -1,150 +1,95 @@
-# Groupie Tracker Map Feature
+Table of Contents
 
-## Overview
-The map feature in Groupie Tracker visualizes concert locations for artists using OpenStreetMap and Leaflet.js. It provides an interactive way to explore where artists have performed or will perform.
+    Overview
+    Features
+    Artist Information
+    Map Feature
+    Dynamic Search
+    Filtering
+    Tech Stack
+    Project Structure
+    API Endpoints
+    Setup & Running
+    Development Notes
+    Contributing
+    License
 
-## Features
-- Interactive world map showing concert locations
-- Clickable markers with location information
-- Automatic zoom and centering based on concert locations
-- Responsive design that adapts to different screen sizes
-- Geocoding of location addresses to coordinates
+Overview
 
-## Technical Implementation
+Groupie Tracker integrates data from a third-party music band API to present a comprehensive catalog of artists, including their images, detailed biographies, concert locations, and performance dates. The application is built with Go for the backend, using standard libraries, and vanilla HTML/CSS/JavaScript for the frontend. Key functionalities include a dynamic search that provides real-time suggestions, an interactive map feature built with OpenStreetMap and Leaflet.js, and a filtering system that lets users narrow down results by criteria such as creation dates, album release years, member counts, and concert locations.
+Features
+Artist Information
 
-### Backend Components
+    Catalog View: Displays a grid of artist cards with images and names.
+    Detailed Artist Pages: 
+        Each artist page shows:
+           Basic artist details (name, image, creation date, first album)
+           Band members list
+           Concert locations and dates
+           Relation mapping between locations and performance dates
+    Error Handling: Comprehensive error pages for invalid requests or server issues.
 
-#### Coordinates Handler (`coordinates.go`)
-- Endpoint: `/api/coordinates`
-- Converts location addresses to geographic coordinates using Nominatim API
-- Implements rate limiting to respect API usage policies
-- Returns JSON array of coordinates with location information
+Map Feature
 
-```go
-type Coordinates struct {
-    Lat     float64 `json:"lat"`
-    Lon     float64 `json:"lon"`
-    Address string  `json:"address"`
-}
-```
+    Interactive Map: Visualizes concert locations using OpenStreetMap and Leaflet.js.
+    Marker Interaction: Clickable markers display location details.
+    Geocoding: Converts addresses to geographic coordinates using the Nominatim API with rate limiting.
+    Responsive Design: The map adjusts to different screen sizes for an optimal viewing experience.
 
-### Frontend Components
+Dynamic Search
 
-#### Map Initialization (`artist-map.js`)
-```javascript
-const map = L.map('artist-map', {
-    center: [20, 0],
-    zoom: 2,
-    minZoom: 2,
-    maxBounds: [
-        [-90, -180],
-        [90, 180]
-    ]
-});
-```
+    Real-Time Suggestions: Provides search suggestions as the user types, with categories for artists, band members, locations, creation dates, and first album details.
+    AJAX-Enabled: Utilizes AJAX for dynamic query processing and suggestion updates without full page reloads.
+    Result Types: Each result displays the main text, type indicator, description, and direct link to the respective artist page.
 
-#### Map Container (`artist.html`)
-```html
-<div id="artist-map"></div>
-```
+Filtering
 
-#### Styling (`artist.css`)
-```css
-#artist-map {
-    width: 900px;
-    height: 550px;
-    border-radius: 1rem;
-    overflow: hidden;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-}
-```
+    Customizable Filters: Users can filter artists based on:
+        Number of band members
+        Creation date range
+        First album year range
+        Concert locations
+    Responsive UI: The filter panel is designed to be mobile-friendly and provides real-time result counts.
+    Default Values: The application automatically sets sensible default filter parameters based on the dataset.
 
-## Dependencies
-- Leaflet.js: v1.9.3
-- OpenStreetMap Tiles
-- Nominatim Geocoding API
+Tech Stack
 
-## Setup Instructions
+    Backend: Go (using only standard packages)
+    Frontend: HTML, CSS, JavaScript
+    Map: OpenStreetMap Tiles, Leaflet.js (v1.9.3)
+    Geocoding: Nominatim API
+    Data Consumption: REST API endpoints provided by the third-party music band API
 
-1. Ensure all dependencies are included:
-```html
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
-<script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
-```
 
-2. Create a map container in your HTML:
-```html
-<div id="artist-map"></div>
-```
 
-3. Initialize the map in your JavaScript:
-```javascript
-document.addEventListener('DOMContentLoaded', async function() {
-    const map = L.map('artist-map', {
-        center: [20, 0],
-        zoom: 2
-    });
+
+Setup & Running
+Prerequisites
+
+    Go 1.22 or higher
+
+Installation:
+
     
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors'
-    }).addTo(map);
-});
-```
 
-## API Usage
+    Use the following URL to clone the repo:
 
-### Getting Coordinates
-```bash
-GET /api/coordinates?id={artistId}
-```
+    git clone https://github.com/Br0m0r/Groupie-tracker.git
 
-Response format:
-```json
-[
-    {
-        "lat": 49.59380,
-        "lon": 8.15052,
-        "address": "Germany Mainz"
-    }
-]
-```
 
-## Error Handling
-- Invalid artist IDs return a 400 Bad Request
-- Artist not found returns a 404 Not Found
-- Server errors return a 500 Internal Server Error
+Start the application using:
 
-## Responsive Design
-The map automatically adjusts its size based on screen width:
-```css
-@media (max-width: 768px) {
-    #artist-map {
-        height: 400px;
-    }
-}
+    go run .
 
-@media (max-width: 480px) {
-    #artist-map {
-        height: 300px;
-    }
-}
-```
+    Access the Application
 
-## Best Practices
-1. Always implement rate limiting for geocoding requests
-2. Cache coordinates when possible to reduce API calls
-3. Handle map bounds to prevent excessive scrolling
-4. Provide fallback behavior when geocoding fails
-5. Ensure proper error handling and user feedback
+    Open your browser and navigate to http://localhost:8080.
 
-## Known Limitations
-- Nominatim API has usage limits (1 request per second)
-- Some addresses may not resolve to exact coordinates
-- Map interactions may be limited on mobile devices
+Development Notes
 
-## Future Improvements
-- Implement coordinate caching
-- Add clustering for multiple nearby locations
-- Enhance marker information windows
-- Add route visualization between venues
-- Implement custom map styles
+    Error Handling: The application includes robust error handling for invalid inputs, failed API calls, and template parsing errors.
+    Responsive Design: The UI adapts to various screen sizes, ensuring a smooth experience on both desktop and mobile devices.
+    Rate Limiting: Geocoding requests to the Nominatim API are rate-limited to adhere to usage policies.
+    Data Caching: Coordinates are cached in the background to reduce repeated API calls and improve performance.
+    Dynamic Search: The real-time search functionality is built with AJAX, ensuring seamless user interaction without page reloads.
+
