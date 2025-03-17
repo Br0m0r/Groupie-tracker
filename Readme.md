@@ -1,19 +1,3 @@
-Table of Contents
-
-    Overview
-    Features
-    Artist Information
-    Map Feature
-    Dynamic Search
-    Filtering
-    Tech Stack
-    Project Structure
-    API Endpoints
-    Setup & Running
-    Development Notes
-    Contributing
-    License
-
 Overview
 
 Groupie Tracker integrates data from a third-party music band API to present a comprehensive catalog of artists, including their images, detailed biographies, concert locations, and performance dates. The application is built with Go for the backend, using standard libraries, and vanilla HTML/CSS/JavaScript for the frontend. Key functionalities include a dynamic search that provides real-time suggestions, an interactive map feature built with OpenStreetMap and Leaflet.js, and a filtering system that lets users narrow down results by criteria such as creation dates, album release years, member counts, and concert locations.
