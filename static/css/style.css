@@ -1,0 +1,266 @@
+/* 
+ * Global Styles and Variables
+ * Main stylesheet containing base styles, variables, and common components
+ */
+
+/* CSS Variables */
+:root {
+  --primary-color: #45b7d1;
+  --primary-dark: #3a9fb5;
+  --secondary-color: #2c3e50;
+  --background-color: hsl(252, 95%, 8%);
+  --text-light: rgba(255, 255, 255, 0.8);
+  --card-bg: rgba(255, 255, 255, 0.9);
+  --card-hover-shadow: 0 15px 30px rgba(0,0,0,0.2);
+  --transition-standard: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Reset Styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
+
+/* Base Layout */
+body {
+  background: var(--background-color);
+  min-height: 100vh;
+  overflow-x: hidden;
+  position: relative;
+  color: var(--text-light);
+  line-height: 1.6;
+}
+
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+  position: relative;
+  z-index: 1;
+}
+
+.title-link {
+  text-decoration: none;
+  color: var(--primary-color);  /* Using our existing color variable */
+}
+
+.title-link:hover {
+  color: var(--primary-dark);
+}
+/* Header Styles */
+header {
+  margin-bottom: 3rem;
+  text-align: center;
+}
+
+header h1 {
+  font-size: clamp(2rem, 5vw, 3rem);
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  position: relative;
+  padding-bottom: 1rem;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  margin-bottom: 1rem;
+  color: #45b7d1;
+  font-weight: 600;
+}
+
+header h1::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80px;
+  height: 4px;
+  background: var(--primary-color);
+  border-radius: 2px;
+  box-shadow: 0 2px 4px rgba(69, 183, 209, 0.3);
+}
+
+header p {
+  color: var(--text-light);
+  font-size: 1.1rem;
+  margin-top: 1rem;
+}
+
+/* Artist Grid - Homepage */
+.artists-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 2rem;
+  padding: 1rem;
+}
+
+.artist-card {
+  background: var(--card-bg);
+  border-radius: 1rem;
+  overflow: hidden;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+  transition: var(--transition-standard);
+  opacity: 0;
+  animation: fadeInUp 0.6s ease forwards;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.artist-card:hover {
+  transform: translateY(-10px) scale(1.02);
+  box-shadow: var(--card-hover-shadow);
+}
+
+.artist-link {
+  text-decoration: none;
+  display: block;
+}
+
+.image-container {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 1;
+}
+
+.image-container img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  filter: brightness(0.95);
+}
+
+.artist-card:hover .image-container img {
+  transform: scale(1.1);
+  filter: brightness(1.05);
+}
+
+.artist-info {
+  padding: 1.5rem;
+  background: rgba(255, 255, 255, 0.95);
+}
+
+.artist-info h2 {
+  color: var(--secondary-color);
+  font-size: 1.25rem;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  transition: color 0.3s ease;
+}
+
+.artist-card:hover .artist-info h2 {
+  color: var(--primary-color);
+}
+
+/* Common Components */
+.back-button {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.75rem 1.5rem;
+  background: var(--primary-color);
+  color: white;
+  text-decoration: none;
+  border-radius: 2rem;
+  font-weight: 500;
+  transition: var(--transition-standard);
+}
+
+.back-button:hover {
+  background: var(--primary-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(69, 183, 209, 0.3);
+}
+
+/* Footer */
+footer {
+  text-align: center;
+  color: var(--text-light);
+  padding: 2rem 0;
+  margin-top: 2.5rem;
+}
+
+/* Background Animation */
+.background-animation {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.floating-object {
+  position: absolute;
+  opacity: 0.1;
+  will-change: transform;
+  animation: float linear infinite;
+}
+
+.floating-object svg {
+  width: 100%;
+  height: 100%;
+  fill: #fff;
+}
+
+.floating-inner {
+  width: 100%;
+  height: 100%;
+  will-change: transform;
+}
+
+/* Animations */
+@keyframes float {
+  0% {
+      transform: translate(0, 0) rotate(0deg);
+  }
+  25% {
+      transform: translate(50px, 25px) rotate(90deg);
+  }
+  50% {
+      transform: translate(0, 50px) rotate(180deg);
+  }
+  75% {
+      transform: translate(-50px, 25px) rotate(270deg);
+  }
+  100% {
+      transform: translate(0, 0) rotate(360deg);
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+      opacity: 0;
+      transform: translateY(30px);
+  }
+  to {
+      opacity: 1;
+      transform: translateY(0);
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .container {
+      padding: 1rem;
+  }
+  
+  .artists-grid {
+      gap: 1.5rem;
+      padding: 0.5rem;
+  }
+  
+  header h1 {
+      font-size: 2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  header h1 {
+      font-size: 1.75rem;
+  }
+  
+  .artists-grid {
+      grid-template-columns: 1fr;
+  }
+}

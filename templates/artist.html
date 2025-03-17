@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{.Name}} - Artist Details</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="/static/css/artist.css">
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="navigation">
+            <div class="nav-buttons">
+                <a href="/" class="back-button">← Back to Artists</a>
+                <a href="#" class="back-button back-to-results" id="backToResults" style="display: none">↶ Back to Results</a>
+            </div>
+        </div>
+        
+        <div class="artist-profile">
+            <div class="artist-header">
+                <div class="artist-profile-content">
+                    <div class="artist-image">
+                        <img src="{{.Image}}" alt="{{.Name}}">
+                    </div>
+                    <div class="artist-info">
+                        <h1>{{.Name}}</h1>
+                        <div class="artist-details">
+                            <p><strong>Creation Date:</strong> {{.CreationDate}}</p>
+                            <p><strong>First Album:</strong> {{.FirstAlbum}}</p>
+                        </div>
+                    </div>
+                </div>
+                <div id="artist-map"></div>
+            </div>
+
+            <div class="members-section">
+                <h2>Members</h2>
+                <ul class="members-list">
+                    {{range .Members}}
+                    <li>{{.}}</li>
+                    {{end}}
+                </ul>
+            </div>
+
+            <div class="locations-section">
+                <h2>Concert Locations</h2>
+                <div class="locations-grid">
+                    {{range .LocationsList}}
+                    <div class="location-card">
+                        <p>{{.}}</p>
+                    </div>
+                    {{end}}
+                </div>
+            </div>
+
+            <div class="dates-section">
+                <h2>Concert Dates</h2>
+                <div class="dates-grid">
+                    {{range .DatesList}}
+                    <div class="date-card">
+                        <p>{{.}}</p>
+                    </div>
+                    {{end}}
+                </div>
+            </div>
+
+            <div class="relations-section">
+                <h2>Locations & Dates</h2>
+                <div class="relations-grid">
+                    {{range $location, $dates := .RelationsList}}
+                    <div class="relation-card">
+                        <h3>{{$location}}</h3>
+                        <ul class="dates-list">
+                            {{range $dates}}
+                            <li>{{.}}</li>
+                            {{end}}
+                        </ul>
+                    </div>
+                    {{end}}
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>© 2024 Groupie Tracker. All rights reserved.</p>
+        </footer>
+    </div>
+    <script>
+        // Show back to results button only if coming from search page
+        document.addEventListener('DOMContentLoaded', () => {
+            const referrer = document.referrer;
+            const backButton = document.getElementById('backToResults');
+            
+            if (referrer && referrer.includes('/search')) {
+                backButton.style.display = 'inline-flex';
+                backButton.href = referrer;
+            }
+        });
+    </script>
+   
+        <script src="/static/js/artist-map.js"></script>
+        <script src="/static/js/main.js"></script>
+</body>
+</html>
