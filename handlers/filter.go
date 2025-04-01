@@ -4,6 +4,7 @@ import (
 	"html/template"
 	"net/http"
 	"strings"
+	"time"
 
 	"groupie/models"
 	"groupie/utils"
@@ -21,7 +22,7 @@ func FilterHandler(w http.ResponseWriter, r *http.Request) {
 	params := extractFilterParams(r)
 
 	// Check if params match default params
-	defaultParams := utils.GetDefaultFilterParams()
+	defaultParams := getDefaultFilterParams()
 	if isDefaultParams(params, defaultParams) {
 		// Redirect to home page instead of processing the filter
 		http.Redirect(w, r, "/", http.StatusSeeOther)
@@ -156,9 +157,8 @@ func extractFilterParams(r *http.Request) models.FilterParams {
 	}
 }
 
-// executeFilterTemplate loads the index.html template and renders it with the given FilterData.
+// Helper function to execute the filter template .
 func executeFilterTemplate(w http.ResponseWriter, data models.FilterData) error {
-	// Define any custom template functions (here, "iterate" for generating ranges).
 	funcMap := template.FuncMap{
 		"iterate": func(start, end int) []int {
 			var result []int
@@ -169,13 +169,24 @@ func executeFilterTemplate(w http.ResponseWriter, data models.FilterData) error 
 		},
 	}
 
-	// Create a new template, add the custom functions, and parse the file.
 	tmpl, err := template.New("index.html").Funcs(funcMap).ParseFiles("templates/index.html")
 	if err != nil {
 		return err
 	}
 
-	// Execute the template, passing the FilterData struct as the context.
-	// The template engine will use this data to fill in the dynamic parts.
 	return tmpl.Execute(w, data)
+}
+
+// Return the default filter parameters.
+func getDefaultFilterParams() models.FilterParams {
+	minCreationYear, minFirstAlbum := dataStore.GetMinYears()
+
+	return models.FilterParams{
+		CreationStart:  minCreationYear,
+		CreationEnd:    time.Now().Year(),
+		AlbumStartYear: minFirstAlbum,
+		AlbumEndYear:   time.Now().Year(),
+		MemberCounts:   []int{},    // Empty slice - no members selected
+		Locations:      []string{}, // Empty slice - no locations selected
+	}
 }

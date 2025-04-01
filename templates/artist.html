@@ -1,144 +1,107 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <!-- Set character encoding and viewport for responsiveness -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Dynamic title using the artist's name -->
     <title>{{.Name}} - Artist Details</title>
-    <!-- Link to the main stylesheet and an artist-specific stylesheet -->
     <link rel="stylesheet" href="/static/css/style.css">
     <link rel="stylesheet" href="/static/css/artist.css">
-    
-    <!-- Leaflet CSS for map display -->
+
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
-    <!-- Leaflet JS for interactive map functionality -->
     <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
 </head>
 <body>
     <div class="container">
-        <!-- Navigation Section -->
         <div class="navigation">
             <div class="nav-buttons">
-                <!-- Back to the main list of artists -->
                 <a href="/" class="back-button">← Back to Artists</a>
-                <!-- Back to Results button (shown only if user came from a search page) -->
                 <a href="#" class="back-button back-to-results" id="backToResults" style="display: none">↶ Back to Results</a>
             </div>
         </div>
         
-        <!-- Artist Profile Section -->
         <div class="artist-profile">
-            <!-- Header: Artist's main info and map container -->
             <div class="artist-header">
                 <div class="artist-profile-content">
-                    <!-- Artist Image -->
                     <div class="artist-image">
-                        <!-- Dynamically display artist image and use artist name for alt text -->
                         <img src="{{.Image}}" alt="{{.Name}}">
                     </div>
-                    <!-- Artist Basic Information -->
                     <div class="artist-info">
-                        <!-- Display artist's name dynamically -->
                         <h1>{{.Name}}</h1>
                         <div class="artist-details">
-                            <!-- Display artist's creation date -->
                             <p><strong>Creation Date:</strong> {{.CreationDate}}</p>
-                            <!-- Display artist's first album information -->
                             <p><strong>First Album:</strong> {{.FirstAlbum}}</p>
                         </div>
                     </div>
                 </div>
-                <!-- Map container for interactive map (initialized via artist-map.js) -->
                 <div id="artist-map"></div>
             </div>
 
-            <!-- Members Section: Lists band members -->
             <div class="members-section">
                 <h2>Members</h2>
                 <ul class="members-list">
-                    <!-- Iterate over the .Members slice -->
                     {{range .Members}}
-                        <!-- Each member is output as a list item; here, the dot (.) represents a single member -->
-                        <li>{{.}}</li>
+                    <li>{{.}}</li>
                     {{end}}
                 </ul>
             </div>
 
-            <!-- Concert Locations Section: Displays formatted locations -->
             <div class="locations-section">
                 <h2>Concert Locations</h2>
                 <div class="locations-grid">
-                    <!-- Iterate over the .LocationsList slice (each element is a formatted location string) -->
                     {{range .LocationsList}}
-                        <div class="location-card">
-                            <p>{{.}}</p>
-                        </div>
+                    <div class="location-card">
+                        <p>{{.}}</p>
+                    </div>
                     {{end}}
                 </div>
             </div>
 
-            <!-- Concert Dates Section: Displays formatted concert dates -->
             <div class="dates-section">
                 <h2>Concert Dates</h2>
                 <div class="dates-grid">
-                    <!-- Iterate over the .DatesList slice (each element is a formatted date string) -->
                     {{range .DatesList}}
-                        <div class="date-card">
-                            <p>{{.}}</p>
-                        </div>
+                    <div class="date-card">
+                        <p>{{.}}</p>
+                    </div>
                     {{end}}
                 </div>
             </div>
 
-            <!-- Relations Section: Maps locations to their corresponding concert dates -->
             <div class="relations-section">
                 <h2>Locations & Dates</h2>
                 <div class="relations-grid">
-                    <!-- Iterate over the .RelationsList map.
-                         Here, the $ sign is used to declare template variables:
-                         - $location holds the map key (a location)
-                         - $dates holds the map value (a slice of dates)
-                         Without the $ sign, we couldn't extract these values separately. -->
                     {{range $location, $dates := .RelationsList}}
-                        <div class="relation-card">
-                            <!-- Output the location name using the $location variable -->
-                            <h3>{{$location}}</h3>
-                            <ul class="dates-list">
-                                <!-- Iterate over the $dates slice. Inside this loop, the dot (.) represents each individual date. -->
-                                {{range $dates}}
-                                    <li>{{.}}</li>
-                                {{end}}
-                            </ul>
-                        </div>
+                    <div class="relation-card">
+                        <h3>{{$location}}</h3>
+                        <ul class="dates-list">
+                            {{range $dates}}
+                            <li>{{.}}</li>
+                            {{end}}
+                        </ul>
+                    </div>
                     {{end}}
                 </div>
             </div>
         </div>
 
-        <!-- Footer Section -->
         <footer>
             <p>© 2024 Groupie Tracker. All rights reserved.</p>
         </footer>
     </div>
-
-    <!-- JavaScript to display the "Back to Results" button if the referrer is a search page -->
     <script>
+        // Show back to results button only if coming from search page
         document.addEventListener('DOMContentLoaded', () => {
             const referrer = document.referrer;
             const backButton = document.getElementById('backToResults');
             
-            // Check if the referrer URL contains '/search'
             if (referrer && referrer.includes('/search')) {
-                // Display the "Back to Results" button and set its link to the referrer URL
                 backButton.style.display = 'inline-flex';
                 backButton.href = referrer;
             }
         });
     </script>
-    
-    <!-- Additional JavaScript files for interactive map functionality and general site behavior -->
-    <script src="/static/js/artist-map.js"></script>
-    <script src="/static/js/main.js"></script>
+   
+        <script src="/static/js/artist-map.js"></script>
+        <script src="/static/js/main.js"></script>
 </body>
 </html>
