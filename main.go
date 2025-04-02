@@ -52,7 +52,7 @@ func main() {
 
 // periodicDataRefresh refreshes the API data every hour
 func periodicDataRefresh(dataStore *store.DataStore) {
-	refreshInterval := 4 * time.Minute
+	refreshInterval := 1 * time.Hour
 
 	for {
 		// Sleep for the refresh interval
@@ -65,13 +65,14 @@ func periodicDataRefresh(dataStore *store.DataStore) {
 		// Create a temporary data store
 		tempStore := store.New()
 
-		// Initialize the temporary store
+		// Initialize the temporary store - this is a blocking call
+		// that will fully complete before continuing
 		if err := tempStore.Initialize(); err != nil {
 			log.Printf("Error refreshing data: %v", err)
-			continue
+			continue // Skip this refresh cycle on error
 		}
 
-		// Swap the data atomically
+		// Now that initialization is complete, swap the data atomically
 		dataStore.SwapData(tempStore)
 
 		fmt.Printf("Data refreshed successfully in %v\n", time.Since(refreshStartTime))

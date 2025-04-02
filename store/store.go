@@ -196,10 +196,6 @@ func (ds *DataStore) SwapData(newStore *DataStore) {
 		}
 		newStore.CoordinateCache.mu.RUnlock()
 	}
-
-	// Log cache stats
-	fmt.Printf("Cache updated: %d artists, %d unique locations, %d cached coordinates\n",
-		len(ds.Artists), len(ds.UniqueLocations), len(ds.CoordinateCache.data))
 }
 
 func (ds *DataStore) GetArtistCards() []models.ArtistCard {
