@@ -7,32 +7,14 @@ import (
 	"time"
 
 	"groupie/handlers"
+	"groupie/server"
 	"groupie/store"
 )
 
 // API base URL and server port
 const (
-	baseURL = "https://groupietrackers.herokuapp.com/api"
-	port    = ":8080"
+	port = ":8080"
 )
-
-// setupServer configures and returns the HTTP router
-func setupServer() *http.ServeMux {
-	mux := http.NewServeMux()
-
-	// Configure routes
-	mux.HandleFunc("/", handlers.HomeHandler)
-	mux.HandleFunc("/artist", handlers.ArtistHandler)
-	mux.HandleFunc("/search", handlers.SearchHandler)
-	mux.HandleFunc("/filter", handlers.FilterHandler)
-	mux.HandleFunc("/api/coordinates", handlers.GetLocationCoordinates)
-
-	// Static file handling
-	fileServer := http.FileServer(http.Dir("static"))
-	mux.Handle("/static/", http.StripPrefix("/static/", fileServer))
-
-	return mux
-}
 
 func main() {
 	// Initialize data store
@@ -47,8 +29,11 @@ func main() {
 	handlers.Initialize(dataStore)
 	fmt.Printf("Data store initialized in %v\n", time.Since(startTime))
 
+	// Start periodic data refresh
+	go periodicDataRefresh(dataStore)
+
 	// Configure and start HTTP server
-	mux := setupServer()
+	mux := server.SetupServer()
 	server := &http.Server{
 		Addr:         port,
 		Handler:      mux,
@@ -62,5 +47,33 @@ func main() {
 
 	if err := server.ListenAndServe(); err != nil {
 		log.Fatalf("Server failed to start: %v", err)
+	}
+}
+
+// periodicDataRefresh refreshes the API data every hour
+func periodicDataRefresh(dataStore *store.DataStore) {
+	refreshInterval := 4 * time.Minute
+
+	for {
+		// Sleep for the refresh interval
+		time.Sleep(refreshInterval)
+
+		// Log refresh attempt
+		fmt.Println("Performing scheduled data refresh...")
+		refreshStartTime := time.Now()
+
+		// Create a temporary data store
+		tempStore := store.New()
+
+		// Initialize the temporary store
+		if err := tempStore.Initialize(); err != nil {
+			log.Printf("Error refreshing data: %v", err)
+			continue
+		}
+
+		// Swap the data atomically
+		dataStore.SwapData(tempStore)
+
+		fmt.Printf("Data refreshed successfully in %v\n", time.Since(refreshStartTime))
 	}
 }

@@ -168,6 +168,40 @@ func (ds *DataStore) Initialize() error {
 	return nil
 }
 
+// SwapData safely replaces the data store contents with data from a new store
+func (ds *DataStore) SwapData(newStore *DataStore) {
+	// Lock both data stores to ensure thread safety
+	ds.mu.Lock()
+	defer ds.mu.Unlock()
+
+	// Replace the main data
+	ds.Artists = newStore.Artists
+	ds.UniqueLocations = newStore.UniqueLocations
+
+	// Merge the coordinate cache - preserve existing coordinates
+	// and add any new ones from the new store
+	ds.CoordinateCache.mu.Lock()
+	defer ds.CoordinateCache.mu.Unlock()
+
+	// If we haven't initialized the map yet, do it now
+	if ds.CoordinateCache.data == nil {
+		ds.CoordinateCache.data = make(map[string]models.Coordinates)
+	}
+
+	// Copy coordinates from new store (if any)
+	if newStore.CoordinateCache.data != nil {
+		newStore.CoordinateCache.mu.RLock()
+		for loc, coord := range newStore.CoordinateCache.data {
+			ds.CoordinateCache.data[loc] = coord
+		}
+		newStore.CoordinateCache.mu.RUnlock()
+	}
+
+	// Log cache stats
+	fmt.Printf("Cache updated: %d artists, %d unique locations, %d cached coordinates\n",
+		len(ds.Artists), len(ds.UniqueLocations), len(ds.CoordinateCache.data))
+}
+
 func (ds *DataStore) GetArtistCards() []models.ArtistCard {
 	ds.mu.RLock()
 	defer ds.mu.RUnlock()
