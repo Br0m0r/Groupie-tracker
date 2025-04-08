@@ -1,6 +1,13 @@
 document.addEventListener('DOMContentLoaded', () => {
    
-
+    // Clear filters functionality - redirects to the homepage
+    const clearButton = document.querySelector('.clear-filters');
+    if (clearButton) {
+        clearButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            window.location.href = '/';
+        });
+    }
     // Setup range slider functionality
     function setupRangeSlider(startClass, endClass, startValueId, endValueId) {
         const startSlider = document.querySelector(`.${startClass}`);

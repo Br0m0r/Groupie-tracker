@@ -32,6 +32,7 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 		UniqueLocations: dataStore.UniqueLocations,
 		SelectedFilters: getDefaultFilterParams(),
 		TotalResults:    len(dataStore.GetArtistCards()),
+		CurrentPath:     r.URL.Path,
 	}
 
 	// Use the existing executeFilterTemplate function
