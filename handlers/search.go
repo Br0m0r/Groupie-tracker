@@ -69,42 +69,28 @@ func SearchHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// handlers/search.go
+// search all data function base on query string
 func searchAllData(query string) []models.SearchResult {
-	// Convert query to lowercase once
+	var results []models.SearchResult
+	var (
+		artistResults   []models.SearchResult
+		memberResults   []models.SearchResult
+		locationResults []models.SearchResult
+		dateResults     []models.SearchResult
+		albumResults    []models.SearchResult
+	)
+
+	// Use the repository pattern through dataStore.GetAllArtists()
+	artists := dataStore.GetAllArtists()
 	query = strings.ToLower(query)
 	isSingleLetter := len([]rune(query)) == 1
 
-	// Create a struct to hold categorized results
-	type categorizedResults struct {
-		artists   []models.SearchResult
-		members   []models.SearchResult
-		locations []models.SearchResult
-		dates     []models.SearchResult
-		albums    []models.SearchResult
-	}
-
-	// Initialize with reasonable capacities
-	results := categorizedResults{
-		artists:   make([]models.SearchResult, 0, 10),
-		members:   make([]models.SearchResult, 0, 10),
-		locations: make([]models.SearchResult, 0, 10),
-		dates:     make([]models.SearchResult, 0, 10),
-		albums:    make([]models.SearchResult, 0, 10),
-	}
-
-	// Get all artists
-	artists := dataStore.GetAllArtists()
-
-	// Single pass through all artists
 	for _, artist := range artists {
-		// Cache frequently used lowercase values
+		// Artist name search
 		artistNameLower := strings.ToLower(artist.Name)
-
-		// Artist name search	
 		if (isSingleLetter && strings.HasPrefix(artistNameLower, query)) ||
 			(!isSingleLetter && strings.Contains(artistNameLower, query)) {
-			results.artists = append(results.artists, models.SearchResult{
+			artistResults = append(artistResults, models.SearchResult{
 				Text:        artist.Name,
 				Type:        "artist/band",
 				ArtistName:  artist.Name,
@@ -118,7 +104,7 @@ func searchAllData(query string) []models.SearchResult {
 			memberLower := strings.ToLower(member)
 			if (isSingleLetter && strings.HasPrefix(memberLower, query)) ||
 				(!isSingleLetter && strings.Contains(memberLower, query)) {
-				results.members = append(results.members, models.SearchResult{
+				memberResults = append(memberResults, models.SearchResult{
 					Text:        member,
 					Type:        "member",
 					ArtistName:  artist.Name,
@@ -133,7 +119,7 @@ func searchAllData(query string) []models.SearchResult {
 			locationLower := strings.ToLower(location)
 			if (isSingleLetter && strings.HasPrefix(locationLower, query)) ||
 				(!isSingleLetter && strings.Contains(locationLower, query)) {
-				results.locations = append(results.locations, models.SearchResult{
+				locationResults = append(locationResults, models.SearchResult{
 					Text:        location,
 					Type:        "location",
 					ArtistName:  artist.Name,
@@ -145,9 +131,9 @@ func searchAllData(query string) []models.SearchResult {
 
 		// Creation date search - only for non-single letter queries
 		if !isSingleLetter {
-			creationStr := fmt.Sprintf("%d", artist.CreationDate)
+			creationStr := fmt.Sprintf("%d", artist.CreationDate) // creation date is int so convert to string
 			if strings.Contains(creationStr, query) {
-				results.dates = append(results.dates, models.SearchResult{
+				dateResults = append(dateResults, models.SearchResult{
 					Text:        fmt.Sprintf("%s (%d)", artist.Name, artist.CreationDate),
 					Type:        "creation date",
 					ArtistName:  artist.Name,
@@ -161,7 +147,7 @@ func searchAllData(query string) []models.SearchResult {
 		albumLower := strings.ToLower(artist.FirstAlbum)
 		if (isSingleLetter && strings.HasPrefix(albumLower, query)) ||
 			(!isSingleLetter && strings.Contains(albumLower, query)) {
-			results.albums = append(results.albums, models.SearchResult{
+			albumResults = append(albumResults, models.SearchResult{
 				Text:        fmt.Sprintf("%s - %s", artist.Name, artist.FirstAlbum),
 				Type:        "first album",
 				ArtistName:  artist.Name,
@@ -171,19 +157,12 @@ func searchAllData(query string) []models.SearchResult {
 		}
 	}
 
-	// Calculate total capacity for combined results
-	totalCapacity := len(results.artists) + len(results.members) +
-		len(results.locations) + len(results.dates) + len(results.albums)
+	// Combine results in desired order
+	results = append(results, artistResults...)   // Artists first
+	results = append(results, memberResults...)   // Then members
+	results = append(results, locationResults...) // Then locations
+	results = append(results, dateResults...)     // Then creation dates
+	results = append(results, albumResults...)    // Finally albums
 
-	// Pre-allocate final slice with exact capacity needed
-	finalResults := make([]models.SearchResult, 0, totalCapacity)
-
-	// Combine in the desired order - no sorting needed!
-	finalResults = append(finalResults, results.artists...)
-	finalResults = append(finalResults, results.members...)
-	finalResults = append(finalResults, results.locations...)
-	finalResults = append(finalResults, results.dates...)
-	finalResults = append(finalResults, results.albums...)
-
-	return finalResults
+	return results
 }

@@ -11,7 +11,6 @@ import (
 )
 
 // FilterHandler processes filter requests and returns filtered artists
-// In handlers/filter.go
 func FilterHandler(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
 		ErrorHandler(w, ErrBadRequest, "Invalid form data")
@@ -35,7 +34,7 @@ func FilterHandler(w http.ResponseWriter, r *http.Request) {
 
 	data := models.FilterData{
 		Artists:         utils.ConvertToCards(filteredArtists),
-		UniqueLocations: dataStore.UniqueLocations,
+		UniqueLocations: dataStore.UniqueLocations(), // Changed from field access to method call
 		SelectedFilters: params,
 		TotalResults:    len(filteredArtists),
 		CurrentPath:     r.URL.Path,
@@ -157,7 +156,7 @@ func extractFilterParams(r *http.Request) models.FilterParams {
 	}
 }
 
-// Helper function to execute the filter template .
+// Helper function to execute the filter template
 func executeFilterTemplate(w http.ResponseWriter, data models.FilterData) error {
 	funcMap := template.FuncMap{
 		"iterate": func(start, end int) []int {

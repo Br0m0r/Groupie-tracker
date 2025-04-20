@@ -29,7 +29,7 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 	// Create initial filter data with default values
 	data := models.FilterData{
 		Artists:         dataStore.GetArtistCards(),
-		UniqueLocations: dataStore.UniqueLocations,
+		UniqueLocations: dataStore.UniqueLocations(), // Changed from field access to method call
 		SelectedFilters: getDefaultFilterParams(),
 		TotalResults:    len(dataStore.GetArtistCards()),
 		CurrentPath:     r.URL.Path,

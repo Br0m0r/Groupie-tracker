@@ -17,14 +17,14 @@ func GetLocationCoordinates(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Get artist data
-	// fmt.Printf("Geocoding request received for artist ID: %s\n", artistID)
+	// Convert artist ID to integer
 	id, err := strconv.Atoi(artistID)
 	if err != nil {
 		ErrorHandler(w, ErrInvalidID, "Invalid artist ID format")
 		return
 	}
 
+	// Get artist data
 	artist, err := dataStore.GetArtist(id)
 	if err != nil {
 		ErrorHandler(w, ErrNotFound, "Artist not found")
@@ -35,16 +35,14 @@ func GetLocationCoordinates(w http.ResponseWriter, r *http.Request) {
 	var coordinates []models.Coordinates
 
 	// Process each location
-	// fmt.Printf("Processing %d locations for artist\n", len(artist.LocationsList))
 	for _, location := range artist.LocationsList {
-		// Try to get coordinates from cache/API
+		// Try to get coordinates from repository through the dataStore
 		coords, err := dataStore.GetLocationCoordinates(location)
 		if err != nil {
 			fmt.Printf("Error getting coordinates for %s: %v\n", location, err)
-			continue
+			continue // Skip this location if coordinates cannot be retrieved
 		}
 		coordinates = append(coordinates, coords)
-
 	}
 
 	// Send response
