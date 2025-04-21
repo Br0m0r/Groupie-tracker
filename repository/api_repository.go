@@ -15,9 +15,6 @@ type APIRepositoryImpl struct {
 
 // NewAPIRepository creates a new API repository instance
 func NewAPIRepository(baseURL string) APIRepository {
-	if baseURL == "" {
-		baseURL = "https://groupietrackers.herokuapp.com/api"
-	}
 	return &APIRepositoryImpl{
 		baseURL: baseURL,
 	}

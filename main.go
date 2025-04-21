@@ -52,7 +52,7 @@ func main() {
 
 // periodicDataRefresh refreshes the API data every hour
 func periodicDataRefresh(dataStore *store.DataStore) {
-	refreshInterval := 1 * time.Hour
+	refreshInterval := 5 * time.Minute
 
 	for {
 		// Sleep for the refresh interval

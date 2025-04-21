@@ -4,60 +4,58 @@ import (
 	"groupie/models"
 )
 
+// DataRepository is a base interface for all data access operations
+// This helps establish a common pattern for all repositories
+type DataRepository interface {
+	// Each repository should have some form of initialization
+	Initialize() error
+}
+
 // ArtistRepository defines the interface for accessing artist data
 type ArtistRepository interface {
-	// Get artist by ID
+	// Read operations
 	GetArtistByID(id int) (models.Artist, error)
-	
-	// Get all artists
 	GetAllArtists() []models.Artist
-	
-	// Get minimal artist information for listing
 	GetArtistCards() []models.ArtistCard
-	
-	// Get unique concert locations from all artists
 	GetUniqueLocations() []string
-	
-	// Get minimum creation year and album year across all artists
 	GetMinYears() (minCreation, minAlbum int)
-	
-	// Load artist data from API
+
+	// Data loading operations
 	LoadData(apiIndex models.ApiIndex) error
 }
 
 // CoordinatesRepository defines the interface for accessing geographic coordinates
 type CoordinatesRepository interface {
-	// Get coordinates for a location, fetching if needed
+	// Read operations
 	Get(location string) (models.Coordinates, error)
-	
-	// Start background loading of coordinates for a set of locations
+
+	// Background/optimization operations
 	PrefetchLocations(locations []string)
-	
-	// Import coordinates from another repository (useful for data refresh)
 	ImportCache(other CoordinatesRepository)
 }
 
 // APIRepository defines the interface for accessing external API data
+// This is the source of truth for all application data
 type APIRepository interface {
-	// Get the API index with URLs for all endpoints
+	// Meta operations
 	GetAPIIndex() (models.ApiIndex, error)
-	
-	// Fetch artist data
+
+	// Data fetching operations
 	FetchArtists(url string) ([]models.Artist, error)
-	
-	// Fetch locations data
+
+	// Location data operations
 	FetchLocations(url string) ([]struct {
 		ID        int      `json:"id"`
 		Locations []string `json:"locations"`
 	}, error)
-	
-	// Fetch concert dates
+
+	// Date data operations
 	FetchDates(url string) ([]struct {
 		ID    int      `json:"id"`
 		Dates []string `json:"dates"`
 	}, error)
-	
-	// Fetch relationships between dates and locations
+
+	// Relation data operations
 	FetchRelations(url string) ([]struct {
 		ID             int                 `json:"id"`
 		DatesLocations map[string][]string `json:"datesLocations"`

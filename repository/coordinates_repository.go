@@ -148,7 +148,7 @@ func (cr *CoordinatesRepositoryImpl) ImportCache(other CoordinatesRepository) {
 
 	cr.mu.Lock()
 	defer cr.mu.Unlock()
-
+	
 	// Copy coordinates from other repository
 	for loc, coord := range otherImpl.cache {
 		cr.cache[loc] = coord
