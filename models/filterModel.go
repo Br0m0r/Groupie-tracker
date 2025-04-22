@@ -7,6 +7,7 @@ type FilterData struct {
 	SelectedFilters FilterParams
 	TotalResults    int
 	CurrentPath     string
+	CurrentYear     int
 }
 
 // FilterParams holds all possible filter parameters

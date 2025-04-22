@@ -38,6 +38,7 @@ func FilterHandler(w http.ResponseWriter, r *http.Request) {
 		SelectedFilters: params,
 		TotalResults:    len(filteredArtists),
 		CurrentPath:     r.URL.Path,
+		CurrentYear:     time.Now().Year(),
 	}
 
 	if err := executeFilterTemplate(w, data); err != nil {

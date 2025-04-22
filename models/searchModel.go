@@ -11,6 +11,7 @@ type SearchResult struct {
 
 // SearchData is a struct that holds the search query and the results.
 type SearchData struct {
-	Query   string
-	Results []SearchResult
+	Query       string
+	Results     []SearchResult
+	CurrentYear int
 }

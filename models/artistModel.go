@@ -27,6 +27,8 @@ type Artist struct {
 	LocationStatesCities map[string][]string `json:"-"` // Maps states to cities
 	DatesList            []string            `json:"-"`
 	RelationsList        map[string][]string `json:"-"` // Maps locations to dates
+
+	CurrentYear int `json:"-"`
 }
 
 // ArtistCard contains minimal info for list views

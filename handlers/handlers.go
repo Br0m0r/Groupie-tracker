@@ -5,6 +5,7 @@ import (
 	"html/template"
 	"net/http"
 	"strconv"
+	"time"
 
 	"groupie/models"
 	"groupie/store"
@@ -33,6 +34,7 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 		SelectedFilters: getDefaultFilterParams(),
 		TotalResults:    len(dataStore.GetArtistCards()),
 		CurrentPath:     r.URL.Path,
+		CurrentYear:     time.Now().Year(),
 	}
 
 	// Use the existing executeFilterTemplate function
@@ -63,6 +65,7 @@ func ArtistHandler(w http.ResponseWriter, r *http.Request) {
 		ErrorHandler(w, ErrNotFound, "Artist not found")
 		return
 	}
+	artist.CurrentYear = time.Now().Year()
 
 	tmpl, err := template.ParseFiles("templates/artist.html")
 	if err != nil {

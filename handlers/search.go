@@ -6,7 +6,9 @@ import (
 	"fmt"
 	"html/template"
 	"net/http"
+	"sort"
 	"strings"
+	"time"
 
 	"groupie/models"
 )
@@ -41,8 +43,9 @@ func SearchHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		data := models.SearchData{
-			Query:   query,
-			Results: results,
+			Query:       query,
+			Results:     results,
+			CurrentYear: time.Now().Year(),
 		}
 
 		if err := tmpl.Execute(w, data); err != nil {
@@ -60,8 +63,9 @@ func SearchHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data := models.SearchData{
-		Query:   "",
-		Results: nil,
+		Query:       "",
+		Results:     nil,
+		CurrentYear: time.Now().Year(),
 	}
 
 	if err := tmpl.Execute(w, data); err != nil {
@@ -69,28 +73,34 @@ func SearchHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// search all data function base on query string
 func searchAllData(query string) []models.SearchResult {
-	var results []models.SearchResult
-	var (
-		artistResults   []models.SearchResult
-		memberResults   []models.SearchResult
-		locationResults []models.SearchResult
-		dateResults     []models.SearchResult
-		albumResults    []models.SearchResult
-	)
+	// Early return for empty queries
+	if query == "" {
+		return nil
+	}
 
-	// Use the repository pattern through dataStore.GetAllArtists()
 	artists := dataStore.GetAllArtists()
 	query = strings.ToLower(query)
 	isSingleLetter := len([]rune(query)) == 1
 
+	// Pre-allocate results slice with estimated capacity
+	// Average estimated size based on expected matches per artist
+	estimatedSize := len(artists) * 2
+	results := make([]models.SearchResult, 0, estimatedSize)
+
+	// Create a single searchMatch helper function
+	searchMatch := func(value, query string, isSingleLetter bool) bool {
+		if isSingleLetter {
+			return strings.HasPrefix(strings.ToLower(value), query)
+		}
+		return strings.Contains(strings.ToLower(value), query)
+	}
+
+	// Process each artist
 	for _, artist := range artists {
 		// Artist name search
-		artistNameLower := strings.ToLower(artist.Name)
-		if (isSingleLetter && strings.HasPrefix(artistNameLower, query)) ||
-			(!isSingleLetter && strings.Contains(artistNameLower, query)) {
-			artistResults = append(artistResults, models.SearchResult{
+		if searchMatch(artist.Name, query, isSingleLetter) {
+			results = append(results, models.SearchResult{
 				Text:        artist.Name,
 				Type:        "artist/band",
 				ArtistName:  artist.Name,
@@ -101,10 +111,8 @@ func searchAllData(query string) []models.SearchResult {
 
 		// Members search
 		for _, member := range artist.Members {
-			memberLower := strings.ToLower(member)
-			if (isSingleLetter && strings.HasPrefix(memberLower, query)) ||
-				(!isSingleLetter && strings.Contains(memberLower, query)) {
-				memberResults = append(memberResults, models.SearchResult{
+			if searchMatch(member, query, isSingleLetter) {
+				results = append(results, models.SearchResult{
 					Text:        member,
 					Type:        "member",
 					ArtistName:  artist.Name,
@@ -116,10 +124,8 @@ func searchAllData(query string) []models.SearchResult {
 
 		// Locations search
 		for _, location := range artist.LocationsList {
-			locationLower := strings.ToLower(location)
-			if (isSingleLetter && strings.HasPrefix(locationLower, query)) ||
-				(!isSingleLetter && strings.Contains(locationLower, query)) {
-				locationResults = append(locationResults, models.SearchResult{
+			if searchMatch(location, query, isSingleLetter) {
+				results = append(results, models.SearchResult{
 					Text:        location,
 					Type:        "location",
 					ArtistName:  artist.Name,
@@ -131,9 +137,9 @@ func searchAllData(query string) []models.SearchResult {
 
 		// Creation date search - only for non-single letter queries
 		if !isSingleLetter {
-			creationStr := fmt.Sprintf("%d", artist.CreationDate) // creation date is int so convert to string
+			creationStr := fmt.Sprintf("%d", artist.CreationDate)
 			if strings.Contains(creationStr, query) {
-				dateResults = append(dateResults, models.SearchResult{
+				results = append(results, models.SearchResult{
 					Text:        fmt.Sprintf("%s (%d)", artist.Name, artist.CreationDate),
 					Type:        "creation date",
 					ArtistName:  artist.Name,
@@ -144,10 +150,8 @@ func searchAllData(query string) []models.SearchResult {
 		}
 
 		// First album search
-		albumLower := strings.ToLower(artist.FirstAlbum)
-		if (isSingleLetter && strings.HasPrefix(albumLower, query)) ||
-			(!isSingleLetter && strings.Contains(albumLower, query)) {
-			albumResults = append(albumResults, models.SearchResult{
+		if searchMatch(artist.FirstAlbum, query, isSingleLetter) {
+			results = append(results, models.SearchResult{
 				Text:        fmt.Sprintf("%s - %s", artist.Name, artist.FirstAlbum),
 				Type:        "first album",
 				ArtistName:  artist.Name,
@@ -157,12 +161,25 @@ func searchAllData(query string) []models.SearchResult {
 		}
 	}
 
-	// Combine results in desired order
-	results = append(results, artistResults...)   // Artists first
-	results = append(results, memberResults...)   // Then members
-	results = append(results, locationResults...) // Then locations
-	results = append(results, dateResults...)     // Then creation dates
-	results = append(results, albumResults...)    // Finally albums
+	// Sort the results by type if needed
+	sortResultsByType(results)
 
 	return results
+}
+
+// Helper function to sort results by type
+func sortResultsByType(results []models.SearchResult) {
+	// Define type priorities
+	typePriority := map[string]int{
+		"artist/band":   1,
+		"member":        2,
+		"location":      3,
+		"creation date": 4,
+		"first album":   5,
+	}
+
+	// Sort by type priority
+	sort.Slice(results, func(i, j int) bool {
+		return typePriority[results[i].Type] < typePriority[results[j].Type]
+	})
 }
