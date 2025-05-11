@@ -10,14 +10,12 @@ import (
 
 var DefaultAPIBaseURL = "https://groupietrackers.herokuapp.com/api"
 
-// DataStore coordinates access to all application data repositories
 type DataStore struct {
-	apiRepo         repository.APIRepository
-	artistRepo      repository.ArtistRepository
-	coordinatesRepo repository.CoordinatesRepository
+	apiRepo         *repository.APIRepositoryImpl
+	artistRepo      *repository.ArtistRepositoryImpl
+	coordinatesRepo *repository.CoordinatesRepositoryImpl
 }
 
-// New creates a new DataStore instance with initialized repositories
 func New() *DataStore {
 	return &DataStore{
 		apiRepo:         repository.NewAPIRepository(DefaultAPIBaseURL),
@@ -46,6 +44,7 @@ func (ds *DataStore) Initialize() error {
 	return nil
 }
 
+// SwapData safely replaces the data store contents with data from a new store
 // SwapData safely replaces the data store contents with data from a new store
 func (ds *DataStore) SwapData(newStore *DataStore) {
 	// Create new repositories

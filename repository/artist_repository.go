@@ -17,10 +17,8 @@ type ArtistRepositoryImpl struct {
 }
 
 // NewArtistRepository creates a new ArtistRepository instance
-func NewArtistRepository() ArtistRepository {
-	return &ArtistRepositoryImpl{
-		artists: make([]models.Artist, 0),
-	}
+func NewArtistRepository() *ArtistRepositoryImpl {
+	return &ArtistRepositoryImpl{artists: make([]models.Artist, 0)}
 }
 
 // LoadData fetches and processes all artist-related data from the API

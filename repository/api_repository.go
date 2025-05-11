@@ -14,10 +14,8 @@ type APIRepositoryImpl struct {
 }
 
 // NewAPIRepository creates a new API repository instance
-func NewAPIRepository(baseURL string) APIRepository {
-	return &APIRepositoryImpl{
-		baseURL: baseURL,
-	}
+func NewAPIRepository(baseURL string) *APIRepositoryImpl {
+	return &APIRepositoryImpl{baseURL: baseURL}
 }
 
 // GetAPIIndex fetches the main API index with all endpoints

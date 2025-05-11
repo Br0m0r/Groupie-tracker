@@ -20,10 +20,8 @@ type CoordinatesRepositoryImpl struct {
 }
 
 // NewCoordinatesRepository creates a new instance of the CoordinatesRepository
-func NewCoordinatesRepository() CoordinatesRepository {
-	return &CoordinatesRepositoryImpl{
-		cache: make(map[string]models.Coordinates),
-	}
+func NewCoordinatesRepository() *CoordinatesRepositoryImpl {
+	return &CoordinatesRepositoryImpl{cache: make(map[string]models.Coordinates)}
 }
 
 // Get retrieves coordinates for a location, fetching from API if not cached
@@ -132,25 +130,20 @@ func (cr *CoordinatesRepositoryImpl) fetchFromAPI(location string) (models.Coord
 }
 
 // ImportCache merges coordinates from another repository
-func (cr *CoordinatesRepositoryImpl) ImportCache(other CoordinatesRepository) {
+// ImportCache merges coordinates from another repository
+func (cr *CoordinatesRepositoryImpl) ImportCache(other *CoordinatesRepositoryImpl) {
 	if other == nil {
 		return
 	}
 
-	// We need to cast to the concrete type to access the cache
-	otherImpl, ok := other.(*CoordinatesRepositoryImpl)
-	if !ok {
-		return // Not the same implementation type
-	}
-
-	otherImpl.mu.RLock()
-	defer otherImpl.mu.RUnlock()
+	other.mu.RLock()
+	defer other.mu.RUnlock()
 
 	cr.mu.Lock()
 	defer cr.mu.Unlock()
-	
+
 	// Copy coordinates from other repository
-	for loc, coord := range otherImpl.cache {
+	for loc, coord := range other.cache {
 		cr.cache[loc] = coord
 	}
 }
