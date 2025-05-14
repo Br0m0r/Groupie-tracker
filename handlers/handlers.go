@@ -11,71 +11,62 @@ import (
 	"groupie/store"
 )
 
-// dataStore holds the application's data layer
-var dataStore *store.DataStore
-
-// Initialize sets up the handlers package with a data store instance
-func Initialize(ds *store.DataStore) {
-	dataStore = ds
-}
-
 // HomeHandler serves the main page with artist listings
-func HomeHandler(w http.ResponseWriter, r *http.Request) {
-	// Check for valid path
-	if r.URL.Path != "/" {
-		ErrorHandler(w, ErrNotFound, "Page not exist")
-		return
-	}
+func HomeHandler(dataStore *store.DataStore) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/" {
+			ErrorHandler(w, ErrNotFound, "Page not exist")
+			return
+		}
 
-	// Create initial filter data with default values
-	data := models.FilterData{
-		Artists:         dataStore.GetArtistCards(),
-		UniqueLocations: dataStore.UniqueLocations(), // Changed from field access to method call
-		SelectedFilters: getDefaultFilterParams(),
-		TotalResults:    len(dataStore.GetArtistCards()),
-		CurrentPath:     r.URL.Path,
-		CurrentYear:     time.Now().Year(),
-	}
+		data := models.FilterData{
+			Artists:         dataStore.GetArtistCards(),
+			UniqueLocations: dataStore.UniqueLocations(),
+			SelectedFilters: getDefaultFilterParams(dataStore),
+			TotalResults:    len(dataStore.GetArtistCards()),
+			CurrentPath:     r.URL.Path,
+			CurrentYear:     time.Now().Year(),
+		}
 
-	// Use the existing executeFilterTemplate function
-	if err := executeFilterTemplate(w, data); err != nil {
-		ErrorHandler(w, ErrInternalServer, "Failed to process template")
-		return
+		if err := executeFilterTemplate(w, data); err != nil {
+			ErrorHandler(w, ErrInternalServer, "Failed to process template")
+			return
+		}
 	}
 }
 
 // ArtistHandler serves individual artist details pages
-func ArtistHandler(w http.ResponseWriter, r *http.Request) {
-	// Extract and validate artist ID
-	idStr := r.URL.Query().Get("id")
-	if idStr == "" {
-		ErrorHandler(w, ErrBadRequest, "Artist ID is required")
-		return
-	}
+func ArtistHandler(dataStore *store.DataStore) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		idStr := r.URL.Query().Get("id")
+		if idStr == "" {
+			ErrorHandler(w, ErrBadRequest, "Artist ID is required")
+			return
+		}
 
-	id, err := strconv.Atoi(idStr)
-	if err != nil {
-		ErrorHandler(w, ErrInvalidID, "Invalid artist ID format")
-		return
-	}
+		id, err := strconv.Atoi(idStr)
+		if err != nil {
+			ErrorHandler(w, ErrInvalidID, "Invalid artist ID format")
+			return
+		}
 
-	// Fetch artist data
-	artist, err := dataStore.GetArtist(id)
-	if err != nil {
-		ErrorHandler(w, ErrNotFound, "Artist not found")
-		return
-	}
-	artist.CurrentYear = time.Now().Year()
+		artist, err := dataStore.GetArtist(id)
+		if err != nil {
+			ErrorHandler(w, ErrNotFound, "Artist not found")
+			return
+		}
+		artist.CurrentYear = time.Now().Year()
 
-	tmpl, err := template.ParseFiles("templates/artist.html")
-	if err != nil {
-		ErrorHandler(w, ErrInternalServer, "Failed to load template")
-		return
-	}
+		tmpl, err := template.ParseFiles("templates/artist.html")
+		if err != nil {
+			ErrorHandler(w, ErrInternalServer, "Failed to load template")
+			return
+		}
 
-	err = tmpl.Execute(w, artist)
-	if err != nil {
-		ErrorHandler(w, ErrInternalServer, "Failed to execute template")
-		return
+		err = tmpl.Execute(w, artist)
+		if err != nil {
+			ErrorHandler(w, ErrInternalServer, "Failed to execute template")
+			return
+		}
 	}
 }

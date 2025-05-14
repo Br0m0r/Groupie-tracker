@@ -7,43 +7,46 @@ import (
 	"time"
 
 	"groupie/models"
+	"groupie/store"
 	"groupie/utils"
 )
 
 // FilterHandler processes filter requests and returns filtered artists
-func FilterHandler(w http.ResponseWriter, r *http.Request) {
-	if err := r.ParseForm(); err != nil {
-		ErrorHandler(w, ErrBadRequest, "Invalid form data")
-		return
-	}
+func FilterHandler(dataStore *store.DataStore) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if err := r.ParseForm(); err != nil {
+			ErrorHandler(w, ErrBadRequest, "Invalid form data")
+			return
+		}
 
-	// Extract filter parameters
-	params := extractFilterParams(r)
+		// Extract filter parameters
+		params := extractFilterParams(r)
 
-	// Check if params match default params
-	defaultParams := getDefaultFilterParams()
-	if isDefaultParams(params, defaultParams) {
-		// Redirect to home page instead of processing the filter
-		http.Redirect(w, r, "/", http.StatusSeeOther)
-		return
-	}
+		// Check if params match default params
+		defaultParams := getDefaultFilterParams(dataStore)
+		if isDefaultParams(params, defaultParams) {
+			// Redirect to home page instead of processing the filter
+			http.Redirect(w, r, "/", http.StatusSeeOther)
+			return
+		}
 
-	// Continue with filtering only if params differ from default
-	allArtists := dataStore.GetAllArtists()
-	filteredArtists := NewArtistFilter(params).Filter(allArtists)
+		// Continue with filtering only if params differ from default
+		allArtists := dataStore.GetAllArtists()
+		filteredArtists := NewArtistFilter(params).Filter(allArtists)
 
-	data := models.FilterData{
-		Artists:         utils.ConvertToCards(filteredArtists),
-		UniqueLocations: dataStore.UniqueLocations(), // Changed from field access to method call
-		SelectedFilters: params,
-		TotalResults:    len(filteredArtists),
-		CurrentPath:     r.URL.Path,
-		CurrentYear:     time.Now().Year(),
-	}
+		data := models.FilterData{
+			Artists:         utils.ConvertToCards(filteredArtists),
+			UniqueLocations: dataStore.UniqueLocations(),
+			SelectedFilters: params,
+			TotalResults:    len(filteredArtists),
+			CurrentPath:     r.URL.Path,
+			CurrentYear:     time.Now().Year(),
+		}
 
-	if err := executeFilterTemplate(w, data); err != nil {
-		ErrorHandler(w, ErrInternalServer, "Failed to process template")
-		return
+		if err := executeFilterTemplate(w, data); err != nil {
+			ErrorHandler(w, ErrInternalServer, "Failed to process template")
+			return
+		}
 	}
 }
 
@@ -178,7 +181,7 @@ func executeFilterTemplate(w http.ResponseWriter, data models.FilterData) error 
 }
 
 // Return the default filter parameters.
-func getDefaultFilterParams() models.FilterParams {
+func getDefaultFilterParams(dataStore *store.DataStore) models.FilterParams {
 	minCreationYear, minFirstAlbum := dataStore.GetMinYears()
 
 	return models.FilterParams{

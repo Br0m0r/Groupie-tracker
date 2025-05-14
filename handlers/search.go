@@ -11,31 +11,53 @@ import (
 	"time"
 
 	"groupie/models"
+	"groupie/store"
 )
 
 // SearchHandler handles both AJAX search suggestions and full search page requests
-func SearchHandler(w http.ResponseWriter, r *http.Request) {
-	query := strings.TrimSpace(r.URL.Query().Get("q"))
+func SearchHandler(dataStore *store.DataStore) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		query := strings.TrimSpace(r.URL.Query().Get("q"))
 
-	// Handle AJAX requests for search suggestions
-	if r.Header.Get("X-Requested-With") == "XMLHttpRequest" {
-		results := searchAllData(query)
-		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(results)
-		return
-	}
-
-	// Handle search page with non-empty query
-	if query != "" {
-		results := searchAllData(query)
-
-		// Redirect to artist page if exactly one result
-		if len(results) == 1 {
-			http.Redirect(w, r, fmt.Sprintf("/artist?id=%d", results[0].ArtistId), http.StatusSeeOther)
+		// Handle AJAX requests for search suggestions
+		if r.Header.Get("X-Requested-With") == "XMLHttpRequest" {
+			results := searchAllData(dataStore, query)
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(results)
 			return
 		}
 
-		// Render search results page
+		// Handle search page with non-empty query
+		if query != "" {
+			results := searchAllData(dataStore, query)
+
+			// Redirect to artist page if exactly one result
+			if len(results) == 1 {
+				http.Redirect(w, r, fmt.Sprintf("/artist?id=%d", results[0].ArtistId), http.StatusSeeOther)
+				return
+			}
+
+			// Render search results page
+			tmpl, err := template.ParseFiles("templates/search.html")
+			if err != nil {
+				ErrorHandler(w, ErrInternalServer, "Failed to load template")
+				return
+			}
+
+			data := models.SearchData{
+				Query:       query,
+				Results:     results,
+				CurrentYear: time.Now().Year(),
+			}
+
+			if err := tmpl.Execute(w, data); err != nil {
+				ErrorHandler(w, ErrInternalServer, "Failed to execute template")
+				return
+			}
+			return
+		}
+
+		// Render empty search page
 		tmpl, err := template.ParseFiles("templates/search.html")
 		if err != nil {
 			ErrorHandler(w, ErrInternalServer, "Failed to load template")
@@ -43,37 +65,18 @@ func SearchHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		data := models.SearchData{
-			Query:       query,
-			Results:     results,
+			Query:       "",
+			Results:     nil,
 			CurrentYear: time.Now().Year(),
 		}
 
 		if err := tmpl.Execute(w, data); err != nil {
 			ErrorHandler(w, ErrInternalServer, "Failed to execute template")
-			return
 		}
-		return
-	}
-
-	// Render empty search page
-	tmpl, err := template.ParseFiles("templates/search.html")
-	if err != nil {
-		ErrorHandler(w, ErrInternalServer, "Failed to load template")
-		return
-	}
-
-	data := models.SearchData{
-		Query:       "",
-		Results:     nil,
-		CurrentYear: time.Now().Year(),
-	}
-
-	if err := tmpl.Execute(w, data); err != nil {
-		ErrorHandler(w, ErrInternalServer, "Failed to execute template")
 	}
 }
 
-func searchAllData(query string) []models.SearchResult {
+func searchAllData(dataStore *store.DataStore, query string) []models.SearchResult {
 	// Early return for empty queries
 	if query == "" {
 		return nil
