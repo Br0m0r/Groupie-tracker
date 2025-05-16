@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Results - Groupie Tracker</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="/static/css/search.css">
+</head>
+<body>
+    <div class="search-page">
+        <a href="/" class="back-button">← Back to Home</a>
+        <h1 class="search-title">Search Results</h1>
+        <h2 class="search-query">Results for: "{{.Query}}"</h2>
+
+        <div class="results-container">
+            {{if .Results}}
+                {{range .Results}}
+                    <a href="/artist?id={{.ArtistId}}" class="result-item">
+                        <div class="result-content">
+                            <span class="result-text">{{.Text}}</span>
+                            <div class="result-details">
+                                <span class="result-description">{{.Description}}</span>
+                                <span class="result-type">{{.Type}}</span>
+                            </div>
+                        </div>
+                    </a>
+                {{end}}
+            {{else}}
+                <div class="no-results">
+                    <p>No results found for "{{.Query}}"</p>
+                </div>
+            {{end}}
+        </div>
+
+        <footer>
+            <p>© {{.CurrentYear}} Groupie Tracker. All rights reserved.</p>
+        </footer>
+    </div>
+    <script src="/static/js/main.js"></script>
+</body>
+</html>

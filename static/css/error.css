@@ -1,0 +1,89 @@
+/* 
+ * Error Page Styles
+ * Contains styles specific to error pages
+ */
+
+/* Error Page Layout */
+.error-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  background: var(--background-color);
+}
+
+/* Error Content */
+.error-content {
+  background: var(--card-bg);
+  padding: 3rem 2rem;
+  border-radius: 1.5rem;
+  text-align: center;
+  max-width: 500px;
+  width: 100%;
+  box-shadow: var(--card-hover-shadow);
+  border: 1px solid rgba(96, 25, 230, 0.1);
+}
+
+/* Error Typography */
+.error-content h1 {
+  color: var(--secondary-color);
+  font-size: 4rem;
+  margin-bottom: 1rem;
+  line-height: 1;
+}
+
+.error-content h2 {
+  color: var(--primary-color);
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.error-content p {
+  color: #666;
+  margin-bottom: 2rem;
+  font-size: 1.1rem;
+  line-height: 1.6;
+}
+
+/* Error Icon */
+.error-icon {
+  font-size: 5rem;
+  color: var(--primary-color);
+  margin-bottom: 1.5rem;
+  opacity: 0.8;
+}
+
+/* Error Page Responsive Design */
+@media (max-width: 768px) {
+  .error-content {
+      margin: 1rem;
+      padding: 2rem;
+  }
+
+  .error-content h1 {
+      font-size: 3rem;
+  }
+
+  .error-content h2 {
+      font-size: 1.25rem;
+  }
+
+  .error-content p {
+      font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .error-content {
+      padding: 1.5rem;
+  }
+
+  .error-content h1 {
+      font-size: 2.5rem;
+  }
+
+  .error-icon {
+      font-size: 4rem;
+  }
+}
