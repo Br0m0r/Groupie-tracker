@@ -169,7 +169,7 @@
     transition: background-color 0.3s ease;
 }
 
-.clear-filters:hover,
+.clear-filters,
 .apply-filters:hover {
     background: var(--primary-dark);
 }
@@ -255,7 +255,7 @@ input[type="checkbox"] {
         
     }
 
-    .clear-filters,
+
     .apply-filters {
         width: 100%;
     }

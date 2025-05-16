@@ -4,45 +4,68 @@ import (
 	"html/template"
 	"net/http"
 	"strings"
+	"time"
 
 	"groupie/models"
+	"groupie/store"
 	"groupie/utils"
 )
 
 // FilterHandler processes filter requests and returns filtered artists
-// In handlers/filter.go
-func FilterHandler(w http.ResponseWriter, r *http.Request) {
-	if err := r.ParseForm(); err != nil {
-		ErrorHandler(w, ErrBadRequest, "Invalid form data")
-		return
-	}
+func FilterHandler(dataStore *store.DataStore) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if err := r.ParseForm(); err != nil {
+			ErrorHandler(w, ErrBadRequest, "Invalid form data")
+			return
+		}
 
-	// Extract filter parameters
-	params := extractFilterParams(r)
+		// Extract filter parameters
+		params := extractFilterParams(r)
 
-	// Check if params match default params
-	defaultParams := utils.GetDefaultFilterParams()
-	if isDefaultParams(params, defaultParams) {
-		// Redirect to home page instead of processing the filter
-		http.Redirect(w, r, "/", http.StatusSeeOther)
-		return
-	}
+		// Check if params match default params
+		defaultParams := getDefaultFilterParams(dataStore)
+		if isDefaultParams(params, defaultParams) {
+			// Redirect to home page instead of processing the filter
+			http.Redirect(w, r, "/", http.StatusSeeOther)
+			return
+		}
 
-	// Continue with filtering only if params differ from default
-	allArtists := dataStore.GetAllArtists()
-	filteredArtists := NewArtistFilter(params).Filter(allArtists)
+		// Perform efficient location-only filtering when applicable
+		var filteredArtists []models.Artist
+		if len(params.Locations) > 0 && len(params.MemberCounts) == 0 &&
+			params.CreationStart == defaultParams.CreationStart && params.CreationEnd == defaultParams.CreationEnd &&
+			params.AlbumStartYear == defaultParams.AlbumStartYear && params.AlbumEndYear == defaultParams.AlbumEndYear {
+			// Use map-based lookups for each selected location
+			artistSet := make(map[int]models.Artist)
+			for _, loc := range params.Locations {
+				for _, artist := range dataStore.GetArtistsByLocation(loc) {
+					artistSet[artist.ID] = artist
+				}
+			}
+			// Convert set to slice
+			for _, artist := range artistSet {
+				filteredArtists = append(filteredArtists, artist)
+			}
+		} else {
+			// Fallback to full in-memory filter for complex queries
+			allArtists := dataStore.GetAllArtists()
+			filteredArtists = NewArtistFilter(params).Filter(allArtists)
+		}
 
-	data := models.FilterData{
-		Artists:         utils.ConvertToCards(filteredArtists),
-		UniqueLocations: dataStore.UniqueLocations,
-		SelectedFilters: params,
-		TotalResults:    len(filteredArtists),
-		CurrentPath:     r.URL.Path,
-	}
+		// Prepare template data
+		data := models.FilterData{
+			Artists:         utils.ConvertToCards(filteredArtists),
+			UniqueLocations: dataStore.UniqueLocations(),
+			SelectedFilters: params,
+			TotalResults:    len(filteredArtists),
+			CurrentPath:     r.URL.Path,
+			CurrentYear:     time.Now().Year(),
+		}
 
-	if err := executeFilterTemplate(w, data); err != nil {
-		ErrorHandler(w, ErrInternalServer, "Failed to process template")
-		return
+		if err := executeFilterTemplate(w, data); err != nil {
+			ErrorHandler(w, ErrInternalServer, "Failed to process template")
+			return
+		}
 	}
 }
 
@@ -156,7 +179,7 @@ func extractFilterParams(r *http.Request) models.FilterParams {
 	}
 }
 
-// Helper function to execute the filter template .
+// Helper function to execute the filter template
 func executeFilterTemplate(w http.ResponseWriter, data models.FilterData) error {
 	funcMap := template.FuncMap{
 		"iterate": func(start, end int) []int {
@@ -174,4 +197,18 @@ func executeFilterTemplate(w http.ResponseWriter, data models.FilterData) error 
 	}
 
 	return tmpl.Execute(w, data)
+}
+
+// Return the default filter parameters.
+func getDefaultFilterParams(dataStore *store.DataStore) models.FilterParams {
+	minCreationYear, minFirstAlbum := dataStore.GetMinYears()
+
+	return models.FilterParams{
+		CreationStart:  minCreationYear,
+		CreationEnd:    time.Now().Year(),
+		AlbumStartYear: minFirstAlbum,
+		AlbumEndYear:   time.Now().Year(),
+		MemberCounts:   []int{},    // Empty slice - no members selected
+		Locations:      []string{}, // Empty slice - no locations selected
+	}
 }
