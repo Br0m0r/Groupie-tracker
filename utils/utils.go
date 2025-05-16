@@ -5,6 +5,8 @@ import (
 	"time"
 )
 
+const DefaultMinYear = 1950
+
 // Format Locations Dates Relations and LocationsList !!!!
 
 // FormatLocation formats a location string to be more readable

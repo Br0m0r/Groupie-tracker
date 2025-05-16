@@ -14,6 +14,7 @@ import (
 // FilterHandler processes filter requests and returns filtered artists
 func FilterHandler(dataStore *store.DataStore) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		// Parse form data
 		if err := r.ParseForm(); err != nil {
 			ErrorHandler(w, ErrBadRequest, "Invalid form data")
 			return
@@ -22,33 +23,84 @@ func FilterHandler(dataStore *store.DataStore) http.HandlerFunc {
 		// Extract filter parameters
 		params := extractFilterParams(r)
 
-		// Check if params match default params
+		// Determine default params (for redirects and fast-path checks)
 		defaultParams := getDefaultFilterParams(dataStore)
+
+		// If nothing changed, redirect home
 		if isDefaultParams(params, defaultParams) {
-			// Redirect to home page instead of processing the filter
 			http.Redirect(w, r, "/", http.StatusSeeOther)
 			return
 		}
 
-		// Perform efficient location-only filtering when applicable
+		// Pull all artists once
+		allArtists := dataStore.GetAllArtists()
 		var filteredArtists []models.Artist
-		if len(params.Locations) > 0 && len(params.MemberCounts) == 0 &&
-			params.CreationStart == defaultParams.CreationStart && params.CreationEnd == defaultParams.CreationEnd &&
-			params.AlbumStartYear == defaultParams.AlbumStartYear && params.AlbumEndYear == defaultParams.AlbumEndYear {
-			// Use map-based lookups for each selected location
+
+		// Fast‐path: ONLY locations selected (everything else at defaults)
+		if len(params.Locations) > 0 &&
+			len(params.MemberCounts) == 0 &&
+			params.CreationStart == defaultParams.CreationStart &&
+			params.CreationEnd == defaultParams.CreationEnd &&
+			params.AlbumStartYear == defaultParams.AlbumStartYear &&
+			params.AlbumEndYear == defaultParams.AlbumEndYear {
+
+			// Use the locationMap for O(1) lookups
 			artistSet := make(map[int]models.Artist)
 			for _, loc := range params.Locations {
-				for _, artist := range dataStore.GetArtistsByLocation(loc) {
-					artistSet[artist.ID] = artist
+				for _, a := range dataStore.GetArtistsByLocation(loc) {
+					artistSet[a.ID] = a
 				}
 			}
-			// Convert set to slice
-			for _, artist := range artistSet {
-				filteredArtists = append(filteredArtists, artist)
+
+			// Flatten to slice
+			filteredArtists = make([]models.Artist, 0, len(artistSet))
+			for _, a := range artistSet {
+				filteredArtists = append(filteredArtists, a)
 			}
+
+		} else if len(params.MemberCounts) > 0 &&
+			len(params.Locations) == 0 &&
+			params.CreationStart == defaultParams.CreationStart &&
+			params.CreationEnd == defaultParams.CreationEnd &&
+			params.AlbumStartYear == defaultParams.AlbumStartYear &&
+			params.AlbumEndYear == defaultParams.AlbumEndYear {
+
+			// Use memberCountMap for O(1) lookups
+			artistSet := make(map[int]models.Artist)
+			for _, c := range params.MemberCounts {
+				for _, a := range dataStore.GetArtistsByMemberCount(c) {
+					artistSet[a.ID] = a
+				}
+			}
+
+			// Flatten to slice
+			filteredArtists = make([]models.Artist, 0, len(artistSet))
+			for _, a := range artistSet {
+				filteredArtists = append(filteredArtists, a)
+			}
+
+		} else if len(params.MemberCounts) == 0 &&
+			len(params.Locations) == 0 &&
+			params.CreationStart == params.CreationEnd &&
+			(params.CreationStart != defaultParams.CreationStart || params.CreationEnd != defaultParams.CreationEnd) &&
+			params.AlbumStartYear == defaultParams.AlbumStartYear &&
+			params.AlbumEndYear == defaultParams.AlbumEndYear {
+
+			// Use creationYearMap for O(1) lookups
+			filteredArtists = dataStore.GetArtistsByCreationYear(params.CreationStart)
+
+		} else if len(params.MemberCounts) == 0 &&
+			len(params.Locations) == 0 &&
+			params.CreationStart == defaultParams.CreationStart &&
+			params.CreationEnd == defaultParams.CreationEnd &&
+			params.AlbumStartYear == params.AlbumEndYear &&
+			(params.AlbumStartYear != defaultParams.AlbumStartYear || params.AlbumEndYear != defaultParams.AlbumEndYear) {
+
+			// Use albumYearMap for O(1) lookups
+			filteredArtists = dataStore.GetArtistsByAlbumYear(params.AlbumStartYear)
+
 		} else {
-			// Fallback to full in-memory filter for complex queries
-			allArtists := dataStore.GetAllArtists()
+			// Fallback: full in-memory filter scan
 			filteredArtists = NewArtistFilter(params).Filter(allArtists)
 		}
 
@@ -62,6 +114,7 @@ func FilterHandler(dataStore *store.DataStore) http.HandlerFunc {
 			CurrentYear:     time.Now().Year(),
 		}
 
+		// Render
 		if err := executeFilterTemplate(w, data); err != nil {
 			ErrorHandler(w, ErrInternalServer, "Failed to process template")
 			return
@@ -69,7 +122,7 @@ func FilterHandler(dataStore *store.DataStore) http.HandlerFunc {
 	}
 }
 
-// Add helper function to compare filter params
+// isDefaultParams checks if user submitted filters are all defaults
 func isDefaultParams(params, defaultParams models.FilterParams) bool {
 	return len(params.MemberCounts) == 0 &&
 		len(params.Locations) == 0 &&
@@ -100,7 +153,7 @@ func (af *ArtistFilter) Filter(artists []models.Artist) []models.Artist {
 	return filtered
 }
 
-// matches checks if an artist matches all filter criteria
+// matches applies each criterion
 func (af *ArtistFilter) matches(artist models.Artist) bool {
 	return af.matchesMemberCount(artist) &&
 		af.matchesCreationDate(artist) &&
@@ -108,7 +161,7 @@ func (af *ArtistFilter) matches(artist models.Artist) bool {
 		af.matchesAlbumYear(artist)
 }
 
-// matchesMemberCount checks if artist matches member count filter
+// matchesMemberCount checks member count filter
 func (af *ArtistFilter) matchesMemberCount(artist models.Artist) bool {
 	if len(af.params.MemberCounts) == 0 {
 		return true
@@ -127,47 +180,36 @@ func (af *ArtistFilter) matchesMemberCount(artist models.Artist) bool {
 	return false
 }
 
-// matchesCreationDate checks if artist matches creation date range
+// matchesCreationDate checks creation date range
 func (af *ArtistFilter) matchesCreationDate(artist models.Artist) bool {
 	return artist.CreationDate >= af.params.CreationStart &&
 		artist.CreationDate <= af.params.CreationEnd
 }
 
-// matchesLocation checks if artist matches location filters
+// matchesLocation checks location filters
 func (af *ArtistFilter) matchesLocation(artist models.Artist) bool {
-	// If no locations are selected in filter, return true
 	if len(af.params.Locations) == 0 {
 		return true
 	}
 
-	for _, filterLocation := range af.params.Locations {
-		filterLocationLower := strings.ToLower(filterLocation)
-
-		// Method 1: Check direct matches in LocationsList
-		for _, artistLocation := range artist.LocationsList {
-			if strings.Contains(strings.ToLower(artistLocation), filterLocationLower) {
+	for _, loc := range af.params.Locations {
+		for _, artistLoc := range artist.LocationsList {
+			if strings.EqualFold(artistLoc, loc) {
 				return true
 			}
 		}
-
-		// Method 2: Check state-city mapping
-		// If artist has cities in this state, return true
-		if citiesInState, exists := artist.LocationStatesCities[filterLocation]; exists && len(citiesInState) > 0 {
-			return true
-		}
 	}
-
 	return false
 }
 
-// matchesAlbumYear checks if artist matches album year range
+// matchesAlbumYear checks album year range
 func (af *ArtistFilter) matchesAlbumYear(artist models.Artist) bool {
-	albumYear := utils.ExtractYear(artist.FirstAlbum)
-	return albumYear >= af.params.AlbumStartYear &&
-		albumYear <= af.params.AlbumEndYear
+	year := utils.ExtractYear(artist.FirstAlbum)
+	return year >= af.params.AlbumStartYear &&
+		year <= af.params.AlbumEndYear
 }
 
-// Helper function to extract filter parameters from request
+// extractFilterParams reads FilterParams from the HTTP request
 func extractFilterParams(r *http.Request) models.FilterParams {
 	return models.FilterParams{
 		MemberCounts:   utils.GetMemberCounts(r),
@@ -195,14 +237,12 @@ func executeFilterTemplate(w http.ResponseWriter, data models.FilterData) error 
 	if err != nil {
 		return err
 	}
-
 	return tmpl.Execute(w, data)
 }
 
 // Return the default filter parameters.
 func getDefaultFilterParams(dataStore *store.DataStore) models.FilterParams {
 	minCreationYear, minFirstAlbum := dataStore.GetMinYears()
-
 	return models.FilterParams{
 		CreationStart:  minCreationYear,
 		CreationEnd:    time.Now().Year(),

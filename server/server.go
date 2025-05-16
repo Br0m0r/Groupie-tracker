@@ -42,7 +42,7 @@ func SetupServer() *http.ServeMux {
 
 // periodicDataRefresh refreshes the API data every hour
 func periodicDataRefresh(dataStore *store.DataStore) {
-	refreshInterval := 1 * time.Minute
+	refreshInterval := 4 * time.Minute
 
 	for {
 		// Sleep for the refresh interval
