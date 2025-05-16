@@ -14,6 +14,11 @@ type ArtistRepositoryImpl struct {
 	artists         []models.Artist
 	artistMap       map[int]models.Artist      // map for fast ID lookups
 	locationMap     map[string][]models.Artist // map for fast location-based lookups
+	memberCountMap  map[int][]models.Artist    // map for fast member-count lookups
+	creationYearMap map[int][]models.Artist    // map for fast creation-year lookups
+	albumYearMap    map[int][]models.Artist    // map for fast first-album-year lookups
+	minCreationYear int                        // cached minimum creation year
+	minAlbumYear    int                        // cached minimum first-album year
 	uniqueLocations []string
 	mu              sync.RWMutex
 }
@@ -24,13 +29,17 @@ func NewArtistRepository() *ArtistRepositoryImpl {
 		artists:         make([]models.Artist, 0),
 		artistMap:       make(map[int]models.Artist),
 		locationMap:     make(map[string][]models.Artist),
+		memberCountMap:  make(map[int][]models.Artist),
+		creationYearMap: make(map[int][]models.Artist),
+		albumYearMap:    make(map[int][]models.Artist),
+		minCreationYear: utils.DefaultMinYear,
+		minAlbumYear:    utils.DefaultMinYear,
 		uniqueLocations: []string{},
 	}
 }
 
 // LoadData fetches and processes all artist-related data from the API
 func (ar *ArtistRepositoryImpl) LoadData(apiIndex models.ApiIndex) error {
-	// Create a temporary API repository to fetch the data
 	apiRepo := NewAPIRepository("")
 
 	// Fetch artists, locations, dates, and relations
@@ -50,7 +59,6 @@ func (ar *ArtistRepositoryImpl) LoadData(apiIndex models.ApiIndex) error {
 	if err != nil {
 		return fmt.Errorf("failed to fetch relation: %v", err)
 	}
-
 	// Temporary map to gather unique locations
 	locationMap := make(map[string]bool)
 
@@ -101,16 +109,16 @@ func (ar *ArtistRepositoryImpl) LoadData(apiIndex models.ApiIndex) error {
 	ar.mu.Lock()
 	defer ar.mu.Unlock()
 
-	// Store the complete slice
+	// Store slice
 	ar.artists = artists
 
-	// Build the ID lookup map
+	// Build ID lookup map
 	ar.artistMap = make(map[int]models.Artist, len(artists))
 	for _, a := range artists {
 		ar.artistMap[a.ID] = a
 	}
 
-	// Build the location lookup map
+	// Build location lookup map
 	ar.locationMap = make(map[string][]models.Artist)
 	for _, a := range artists {
 		for _, loc := range a.LocationsList {
@@ -118,9 +126,49 @@ func (ar *ArtistRepositoryImpl) LoadData(apiIndex models.ApiIndex) error {
 		}
 	}
 
-	// Build uniqueLocations slice from map keys
-	ar.uniqueLocations = make([]string, 0, len(ar.locationMap))
-	for loc := range ar.locationMap {
+	// Build member-count map
+	ar.memberCountMap = make(map[int][]models.Artist)
+	for _, a := range artists {
+		count := len(a.Members)
+		ar.memberCountMap[count] = append(ar.memberCountMap[count], a)
+	}
+
+	// Build creation-year map
+	ar.creationYearMap = make(map[int][]models.Artist)
+	for _, a := range artists {
+		year := a.CreationDate
+		ar.creationYearMap[year] = append(ar.creationYearMap[year], a)
+	}
+
+	// Build first-album-year map
+	ar.albumYearMap = make(map[int][]models.Artist)
+	for _, a := range artists {
+		year := utils.ExtractYear(a.FirstAlbum)
+		if year > 0 {
+			ar.albumYearMap[year] = append(ar.albumYearMap[year], a)
+		}
+	}
+
+	// Cache minimum years
+	if len(ar.artists) > 0 {
+		ar.minCreationYear = ar.artists[0].CreationDate
+		ar.minAlbumYear = utils.ExtractYear(ar.artists[0].FirstAlbum)
+		for _, a := range ar.artists {
+			if a.CreationDate < ar.minCreationYear {
+				ar.minCreationYear = a.CreationDate
+			}
+			if y := utils.ExtractYear(a.FirstAlbum); y > 0 && y < ar.minAlbumYear {
+				ar.minAlbumYear = y
+			}
+		}
+	} else {
+		ar.minCreationYear = utils.DefaultMinYear
+		ar.minAlbumYear = utils.DefaultMinYear
+	}
+
+	// Build uniqueLocations slice
+	ar.uniqueLocations = make([]string, 0, len(locationMap))
+	for loc := range locationMap {
 		ar.uniqueLocations = append(ar.uniqueLocations, loc)
 	}
 	sort.Strings(ar.uniqueLocations)
@@ -139,7 +187,7 @@ func (ar *ArtistRepositoryImpl) GetArtistByID(id int) (models.Artist, error) {
 	return artist, nil
 }
 
-// GetArtistsByLocation retrieves artists who have performed at the given location
+// GetArtistsByLocation retrieves artists who performed at the given location
 func (ar *ArtistRepositoryImpl) GetArtistsByLocation(location string) []models.Artist {
 	ar.mu.RLock()
 	list, ok := ar.locationMap[location]
@@ -147,7 +195,36 @@ func (ar *ArtistRepositoryImpl) GetArtistsByLocation(location string) []models.A
 	if !ok {
 		return []models.Artist{}
 	}
-	// Return a copy to avoid mutation
+	result := make([]models.Artist, len(list))
+	copy(result, list)
+	return result
+}
+
+// GetArtistsByMemberCount retrieves artists matching the given member count
+func (ar *ArtistRepositoryImpl) GetArtistsByMemberCount(count int) []models.Artist {
+	ar.mu.RLock()
+	list := ar.memberCountMap[count]
+	ar.mu.RUnlock()
+	result := make([]models.Artist, len(list))
+	copy(result, list)
+	return result
+}
+
+// GetArtistsByCreationYear retrieves artists matching the given creation year
+func (ar *ArtistRepositoryImpl) GetArtistsByCreationYear(year int) []models.Artist {
+	ar.mu.RLock()
+	list := ar.creationYearMap[year]
+	ar.mu.RUnlock()
+	result := make([]models.Artist, len(list))
+	copy(result, list)
+	return result
+}
+
+// GetArtistsByAlbumYear retrieves artists matching the given first-album year
+func (ar *ArtistRepositoryImpl) GetArtistsByAlbumYear(year int) []models.Artist {
+	ar.mu.RLock()
+	list := ar.albumYearMap[year]
+	ar.mu.RUnlock()
 	result := make([]models.Artist, len(list))
 	copy(result, list)
 	return result
@@ -165,6 +242,7 @@ func (ar *ArtistRepositoryImpl) GetArtistCards() []models.ArtistCard {
 			Name:  artist.Name,
 			Image: artist.Image,
 		}
+
 	}
 	return cards
 }
@@ -189,25 +267,9 @@ func (ar *ArtistRepositoryImpl) GetUniqueLocations() []string {
 	return locs
 }
 
-// GetMinYears returns the minimum creation year and first album year across all artists
+// GetMinYears returns the cached minimum creation year and first album year
 func (ar *ArtistRepositoryImpl) GetMinYears() (minCreation, minAlbum int) {
 	ar.mu.RLock()
 	defer ar.mu.RUnlock()
-
-	if len(ar.artists) == 0 {
-		return 1950, 1950
-	}
-
-	minCreation = ar.artists[0].CreationDate
-	minAlbum = utils.ExtractYear(ar.artists[0].FirstAlbum)
-
-	for _, artist := range ar.artists {
-		if artist.CreationDate < minCreation {
-			minCreation = artist.CreationDate
-		}
-		if year := utils.ExtractYear(artist.FirstAlbum); year > 0 && year < minAlbum {
-			minAlbum = year
-		}
-	}
-	return minCreation, minAlbum
+	return ar.minCreationYear, ar.minAlbumYear
 }

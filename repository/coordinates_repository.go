@@ -24,6 +24,21 @@ func NewCoordinatesRepository() *CoordinatesRepositoryImpl {
 	return &CoordinatesRepositoryImpl{cache: make(map[string]models.Coordinates)}
 }
 
+// Has reports whether the given location is already in the cache.
+func (cr *CoordinatesRepositoryImpl) Has(location string) bool {
+	cr.mu.RLock()
+	defer cr.mu.RUnlock()
+	_, ok := cr.cache[location]
+	return ok
+}
+
+// CacheSize returns the number of entries currently cached
+func (cr *CoordinatesRepositoryImpl) CacheSize() int {
+	cr.mu.RLock()
+	defer cr.mu.RUnlock()
+	return len(cr.cache)
+}
+
 // Get retrieves coordinates for a location, fetching from API if not cached
 func (cr *CoordinatesRepositoryImpl) Get(location string) (models.Coordinates, error) {
 	// First, try to get from cache
@@ -129,7 +144,6 @@ func (cr *CoordinatesRepositoryImpl) fetchFromAPI(location string) (models.Coord
 	}, nil
 }
 
-// ImportCache merges coordinates from another repository
 // ImportCache merges coordinates from another repository
 func (cr *CoordinatesRepositoryImpl) ImportCache(other *CoordinatesRepositoryImpl) {
 	if other == nil {

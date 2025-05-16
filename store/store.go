@@ -16,7 +16,6 @@ type DataStore struct {
 	coordinatesRepo *repository.CoordinatesRepositoryImpl
 }
 
-// New creates a new DataStore with initialized repositories
 func New() *DataStore {
 	return &DataStore{
 		apiRepo:         repository.NewAPIRepository(DefaultAPIBaseURL),
@@ -45,31 +44,38 @@ func (ds *DataStore) Initialize() error {
 	return nil
 }
 
-// SwapData safely replaces the data store contents with data from a new store
 func (ds *DataStore) SwapData(newStore *DataStore) {
-	// Create new repositories
-	newArtistRepo := repository.NewArtistRepository()
-	newCoordinatesRepo := repository.NewCoordinatesRepository()
+	log.Println("Data refresh started")
 
-	// Get the API index for the latest data
-	index, err := ds.apiRepo.GetAPIIndex()
-	if err != nil {
-		log.Printf("Error fetching API index during swap: %v", err)
-		return
+	// Snapshot old stats
+	oldArtistCount := len(ds.artistRepo.GetAllArtists())
+	oldCoordCount := ds.coordinatesRepo.CacheSize()
+
+	// Swap in the new artists
+	ds.artistRepo = newStore.artistRepo
+
+	// Now discover any locations we didn’t have yet
+	newLocations := ds.artistRepo.GetUniqueLocations()
+	added := 0
+	for _, loc := range newLocations {
+		if !ds.coordinatesRepo.Has(loc) {
+			// this will fetch & cache under the hood
+			if _, err := ds.coordinatesRepo.Get(loc); err == nil {
+				added++
+			}
+		}
 	}
 
-	// Initialize the new artist repository
-	if err := newArtistRepo.LoadData(index); err != nil {
-		log.Printf("Error loading artist data during swap: %v", err)
-		return
-	}
+	// Final stats
+	newArtistCount := len(ds.artistRepo.GetAllArtists())
+	newCoordCount := ds.coordinatesRepo.CacheSize()
 
-	// Import coordinate cache from the new store
-	newCoordinatesRepo.ImportCache(newStore.coordinatesRepo)
-
-	// Atomically swap the repositories
-	ds.artistRepo = newArtistRepo
-	ds.coordinatesRepo = newCoordinatesRepo
+	log.Printf(
+		"Data refresh complete: artists %d→%d; coords %d→%d (added %d new)\n",
+		oldArtistCount, newArtistCount,
+		oldCoordCount, newCoordCount,
+		added,
+	)
 }
 
 // GetArtistCards delegates to ArtistRepository
@@ -102,7 +108,22 @@ func (ds *DataStore) UniqueLocations() []string {
 	return ds.artistRepo.GetUniqueLocations()
 }
 
-// GetArtistsByLocation delegates to ArtistRepository for O(1) location lookups
+// GetArtistsByLocation delegates to ArtistRepository
 func (ds *DataStore) GetArtistsByLocation(location string) []models.Artist {
 	return ds.artistRepo.GetArtistsByLocation(location)
+}
+
+// GetArtistsByMemberCount delegates to ArtistRepository
+func (ds *DataStore) GetArtistsByMemberCount(count int) []models.Artist {
+	return ds.artistRepo.GetArtistsByMemberCount(count)
+}
+
+// GetArtistsByCreationYear delegates to ArtistRepository
+func (ds *DataStore) GetArtistsByCreationYear(year int) []models.Artist {
+	return ds.artistRepo.GetArtistsByCreationYear(year)
+}
+
+// GetArtistsByAlbumYear delegates to ArtistRepository
+func (ds *DataStore) GetArtistsByAlbumYear(year int) []models.Artist {
+	return ds.artistRepo.GetArtistsByAlbumYear(year)
 }
