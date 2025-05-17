@@ -273,3 +273,60 @@ func (ar *ArtistRepositoryImpl) GetMinYears() (minCreation, minAlbum int) {
 	defer ar.mu.RUnlock()
 	return ar.minCreationYear, ar.minAlbumYear
 }
+
+// AddArtists merges the given slice of artists into the repository,
+// returning only those that were not already present.
+func (ar *ArtistRepositoryImpl) AddArtists(artists []models.Artist) []models.Artist {
+	ar.mu.Lock()
+	defer ar.mu.Unlock()
+
+	var added []models.Artist
+	for _, a := range artists {
+		if _, exists := ar.artistMap[a.ID]; exists {
+			continue
+		}
+		// 1) append to slice & map
+		ar.artists = append(ar.artists, a)
+		ar.artistMap[a.ID] = a
+
+		// 2) update locationMap & uniqueLocations
+		for _, loc := range a.LocationsList {
+			ar.locationMap[loc] = append(ar.locationMap[loc], a)
+			// if first time seeing loc, add to uniqueLocations
+			found := false
+			for _, u := range ar.uniqueLocations {
+				if u == loc {
+					found = true
+					break
+				}
+			}
+			if !found {
+				ar.uniqueLocations = append(ar.uniqueLocations, loc)
+			}
+		}
+
+		// 3) update your other maps (memberCountMap, creationYearMap, albumYearMap)
+		count := len(a.Members)
+		ar.memberCountMap[count] = append(ar.memberCountMap[count], a)
+
+		ar.creationYearMap[a.CreationDate] = append(ar.creationYearMap[a.CreationDate], a)
+
+		if y := utils.ExtractYear(a.FirstAlbum); y > 0 {
+			ar.albumYearMap[y] = append(ar.albumYearMap[y], a)
+		}
+
+		// 4) update minima
+		if a.CreationDate < ar.minCreationYear {
+			ar.minCreationYear = a.CreationDate
+		}
+		if y := utils.ExtractYear(a.FirstAlbum); y > 0 && y < ar.minAlbumYear {
+			ar.minAlbumYear = y
+		}
+
+		added = append(added, a)
+	}
+
+	// (re-sort uniqueLocations if you care about order)
+	sort.Strings(ar.uniqueLocations)
+	return added
+}

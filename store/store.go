@@ -127,3 +127,37 @@ func (ds *DataStore) GetArtistsByCreationYear(year int) []models.Artist {
 func (ds *DataStore) GetArtistsByAlbumYear(year int) []models.Artist {
 	return ds.artistRepo.GetArtistsByAlbumYear(year)
 }
+
+// RefreshData fetches the latest artist list and merges in only the new entries.
+// It then fetches coordinates for any new locations, returning counts of new
+// artists and new coords pulled in.
+func (ds *DataStore) RefreshData() (newArtists, newCoords int, err error) {
+    // 1) Get fresh API index
+    index, err := ds.apiRepo.GetAPIIndex()
+    if err != nil {
+        return 0, 0, fmt.Errorf("failed to fetch API index: %v", err)
+    }
+
+    // 2) Fetch the full artist list from the API
+    fresh, err := ds.apiRepo.FetchArtists(index.Artists)
+    if err != nil {
+        return 0, 0, fmt.Errorf("failed to fetch artists: %v", err)
+    }
+
+    // 3) Merge in only the truly new artists
+    added := ds.artistRepo.AddArtists(fresh)
+    newArtists = len(added)
+
+    // 4) For each new artist, fetch any coords we don't already have
+    for _, a := range added {
+        for _, loc := range a.LocationsList {
+            if !ds.coordinatesRepo.Has(loc) {
+                if _, err := ds.coordinatesRepo.Get(loc); err == nil {
+                    newCoords++
+                }
+            }
+        }
+    }
+
+    return newArtists, newCoords, nil
+}
