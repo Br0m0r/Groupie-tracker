@@ -40,31 +40,26 @@ func SetupServer() *http.ServeMux {
 	return mux
 }
 
-// periodicDataRefresh refreshes the API data every hour
 func periodicDataRefresh(dataStore *store.DataStore) {
 	refreshInterval := 4 * time.Minute
 
+	// Delay first refresh so it won’t collide with initial Initialize()
+	time.Sleep(refreshInterval)
+
 	for {
-		// Sleep for the refresh interval
-		time.Sleep(refreshInterval)
+		log.Println("Performing scheduled incremental refresh...")
+		start := time.Now()
 
-		// Log refresh attempt
-		fmt.Println("Performing scheduled data refresh...")
-		refreshStartTime := time.Now()
-
-		// Create a temporary data store
-		tempStore := store.New()
-
-		// Initialize the temporary store - this is a blocking call
-		// that will fully complete before continuing
-		if err := tempStore.Initialize(); err != nil {
-			log.Printf("Error refreshing data: %v", err)
-			continue // Skip this refresh cycle on error
+		na, nc, err := dataStore.RefreshData()
+		if err != nil {
+			log.Printf("  ERROR during refresh: %v\n", err)
+		} else {
+			log.Printf(
+				"  Incremental refresh complete: added %d artists, %d coords (took %v)\n",
+				na, nc, time.Since(start),
+			)
 		}
 
-		// Now that initialization is complete, swap the data atomically
-		dataStore.SwapData(tempStore)
-
-		fmt.Printf("Data refreshed successfully in %v\n", time.Since(refreshStartTime))
+		time.Sleep(refreshInterval)
 	}
 }

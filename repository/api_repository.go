@@ -8,6 +8,12 @@ import (
 	"groupie/models"
 )
 
+// APIRepository defines the methods we use from the API client.
+type APIRepository interface {
+	GetAPIIndex() (models.ApiIndex, error)
+	FetchArtists(endpoint string) ([]models.Artist, error)
+}
+
 // APIRepositoryImpl handles fetching data from external API endpoints
 type APIRepositoryImpl struct {
 	baseURL string
