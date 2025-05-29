@@ -85,30 +85,4 @@ func (a *Artist) HasLocation(location string) bool {
 }
 
 // ArtistCard contains minimal info for list views (memory optimized)
-type ArtistCard struct {
-	ID    int    `json:"id"`
-	Name  string `json:"name"`
-	Image string `json:"image"`
-}
 
-// Validate performs basic validation on an ArtistCard
-func (ac *ArtistCard) Validate() error {
-	if ac.ID <= 0 {
-		return fmt.Errorf("artist card ID must be positive, got %d", ac.ID)
-	}
-
-	if strings.TrimSpace(ac.Name) == "" {
-		return errors.New("artist card name is required")
-	}
-
-	return nil
-}
-
-// ToArtistCard converts an Artist to an ArtistCard
-func (a *Artist) ToArtistCard() ArtistCard {
-	return ArtistCard{
-		ID:    a.ID,
-		Name:  a.Name,
-		Image: a.Image,
-	}
-}

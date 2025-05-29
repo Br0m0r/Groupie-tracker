@@ -10,12 +10,13 @@ import (
 )
 
 // APIRepository defines the methods for API data fetching
-type APIRepository interface {
+type APIRepositoryInterface interface {
 	GetAPIIndex() (*models.ApiIndex, error)
 	FetchArtists(endpoint string) ([]models.Artist, error)
 	FetchLocations(endpoint string) ([]LocationData, error)
 	FetchDates(endpoint string) ([]DateData, error)
 	FetchRelations(endpoint string) ([]RelationData, error)
+	// Additional methods can be added as needed
 }
 
 // APIRepositoryImpl handles fetching data from external API endpoints

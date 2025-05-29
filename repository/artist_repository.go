@@ -9,6 +9,19 @@ import (
 	"groupie/utils"
 )
 
+type ArtistRepositoryInterface interface {
+	LoadData(apiIndex models.ApiIndex) error
+	GetArtistByID(id int) (*models.Artist, error)
+	GetArtistsByLocation(location string) []*models.Artist
+	GetArtistsByMemberCount(count int) []*models.Artist
+	GetArtistsByCreationYear(year int) []*models.Artist
+	GetArtistsByAlbumYear(year int) []*models.Artist
+	GetAllArtists() []*models.Artist
+	GetUniqueLocations() []string
+	GetMinYears() (minCreation, minAlbum int)
+	// Additional methods can be added as needed
+}
+
 // ArtistRepository manages all artist-related data and operations
 type ArtistRepository struct {
 	// Core data storage - use pointers to save memory
@@ -269,18 +282,6 @@ func (ar *ArtistRepository) idsToArtists(ids []int) []*models.Artist {
 		}
 	}
 	return artists
-}
-
-// GetArtistCards returns lightweight cards for all artists
-func (ar *ArtistRepository) GetArtistCards() []models.ArtistCard {
-	ar.mu.RLock()
-	defer ar.mu.RUnlock()
-
-	cards := make([]models.ArtistCard, len(ar.artists))
-	for i, artist := range ar.artists {
-		cards[i] = artist.ToArtistCard()
-	}
-	return cards
 }
 
 // GetAllArtists returns all artists (returns pointers for efficiency)

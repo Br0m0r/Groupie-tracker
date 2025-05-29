@@ -15,21 +15,21 @@ func GetLocationCoordinates(dataStore *store.DataStore) http.HandlerFunc {
 		// Extract artist ID from query params
 		artistID := r.URL.Query().Get("id")
 		if artistID == "" {
-			ErrorHandler(w, ErrBadRequest, "Artist ID is required")
+			ErrorHandler(w, models.ErrBadRequest, "Artist ID is required")
 			return
 		}
 
 		// Convert artist ID to integer
 		id, err := strconv.Atoi(artistID)
 		if err != nil {
-			ErrorHandler(w, ErrInvalidID, "Invalid artist ID format")
+			ErrorHandler(w, models.ErrInvalidID, "Invalid artist ID format")
 			return
 		}
 
 		// Get artist data
 		artist, err := dataStore.GetArtist(id)
 		if err != nil {
-			ErrorHandler(w, ErrNotFound, "Artist not found")
+			ErrorHandler(w, models.ErrNotFound, "Artist not found")
 			return
 		}
 

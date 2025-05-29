@@ -3,6 +3,8 @@ package store
 import (
 	"fmt"
 	"log"
+	"sort"
+	"strings"
 	"time"
 
 	"groupie/config"
@@ -19,10 +21,10 @@ type DataStore struct {
 
 // New creates a new DataStore instance
 func New() *DataStore {
-	cfg := config.Get() // Use our config package
+	cfg := config.GetAPIBaseURL()
 
 	return &DataStore{
-		apiRepo:         repository.NewAPIRepository(cfg.API.BaseURL),
+		apiRepo:         repository.NewAPIRepository(cfg),
 		artistRepo:      repository.NewArtistRepository(),
 		coordinatesRepo: repository.NewCoordinatesRepository(),
 	}
@@ -81,11 +83,6 @@ func (ds *DataStore) SwapData(newStore *DataStore) {
 		oldCoordCount, newCoordCount,
 		added,
 	)
-}
-
-// GetArtistCards returns lightweight artist cards for list displays
-func (ds *DataStore) GetArtistCards() []models.ArtistCard {
-	return ds.artistRepo.GetArtistCards()
 }
 
 // GetArtist retrieves a single artist by ID (returns pointer now)
@@ -170,6 +167,122 @@ func (ds *DataStore) RefreshData() (newArtists, newCoords int, err error) {
 
 	log.Printf("Refresh complete: %d new artists, %d new coordinates", newArtists, newCoords)
 	return newArtists, newCoords, nil
+}
+
+// store/store.go - add these methods
+func (ds *DataStore) SearchArtists(query string) []models.SearchResult {
+	// Early return for empty queries
+	if strings.TrimSpace(query) == "" {
+		return []models.SearchResult{}
+	}
+
+	artists := ds.GetAllArtists()
+	query = strings.ToLower(strings.TrimSpace(query))
+	isSingleLetter := len([]rune(query)) == 1
+
+	// Pre-allocate results slice
+	results := make([]models.SearchResult, 0, len(artists)*2)
+
+	// Process each artist
+	for _, artist := range artists {
+		results = append(results, ds.searchInArtist(artist, query, isSingleLetter)...)
+	}
+
+	// Sort and return
+	ds.sortResultsByType(results)
+	return results
+}
+
+// Helper methods (private to store)
+func (ds *DataStore) searchInArtist(artist *models.Artist, query string, isSingleLetter bool) []models.SearchResult {
+	var results []models.SearchResult
+
+	// Artist name search
+	if ds.searchMatch(artist.Name, query, isSingleLetter) {
+		results = append(results, models.SearchResult{
+			Text:        artist.Name,
+			Type:        "artist/band",
+			ArtistName:  artist.Name,
+			Description: fmt.Sprintf("Band formed in %d", artist.CreationDate),
+			ArtistId:    artist.ID,
+		})
+	}
+
+	// Members search
+	for _, member := range artist.Members {
+		if ds.searchMatch(member, query, isSingleLetter) {
+			results = append(results, models.SearchResult{
+				Text:        member,
+				Type:        "member",
+				ArtistName:  artist.Name,
+				Description: fmt.Sprintf("Member of %s", artist.Name),
+				ArtistId:    artist.ID,
+			})
+		}
+	}
+
+	// Locations search
+	for _, location := range artist.LocationsList {
+		if ds.searchMatch(location, query, isSingleLetter) {
+			results = append(results, models.SearchResult{
+				Text:        location,
+				Type:        "location",
+				ArtistName:  artist.Name,
+				Description: fmt.Sprintf("Concert location for %s", artist.Name),
+				ArtistId:    artist.ID,
+			})
+		}
+	}
+
+	// Creation date search - only for non-single letter queries
+	if !isSingleLetter {
+		creationStr := fmt.Sprintf("%d", artist.CreationDate)
+		if strings.Contains(creationStr, query) {
+			results = append(results, models.SearchResult{
+				Text:        fmt.Sprintf("%s (%d)", artist.Name, artist.CreationDate),
+				Type:        "creation date",
+				ArtistName:  artist.Name,
+				Description: fmt.Sprintf("Band formed in %d", artist.CreationDate),
+				ArtistId:    artist.ID,
+			})
+		}
+	}
+
+	// First album search
+	if ds.searchMatch(artist.FirstAlbum, query, isSingleLetter) {
+		results = append(results, models.SearchResult{
+			Text:        fmt.Sprintf("%s - %s", artist.Name, artist.FirstAlbum),
+			Type:        "first album",
+			ArtistName:  artist.Name,
+			Description: fmt.Sprintf("First album by %s", artist.Name),
+			ArtistId:    artist.ID,
+		})
+	}
+
+	return results
+}
+
+func (ds *DataStore) searchMatch(value, query string, isSingleLetter bool) bool {
+	if isSingleLetter {
+		return strings.HasPrefix(strings.ToLower(value), query)
+	}
+	return strings.Contains(strings.ToLower(value), query)
+}
+
+func (ds *DataStore) sortResultsByType(results []models.SearchResult) {
+	// Define type priorities
+	typePriority := map[string]int{
+		"artist/band":   1,
+		"member":        2,
+		"location":      3,
+		"creation date": 4,
+		"first album":   5,
+	}
+
+	// Sort by type priority
+	sort.Slice(results, func(i, j int) bool {
+		return typePriority[results[i].Type] < typePriority[results[j].Type]
+	})
 }
 
 // Update the function signature

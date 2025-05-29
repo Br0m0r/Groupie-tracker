@@ -15,21 +15,21 @@ import (
 func HomeHandler(dataStore *store.DataStore) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/" {
-			ErrorHandler(w, ErrNotFound, "Page does not exist")
+			ErrorHandler(w, models.ErrNotFound, "Page does not exist")
 			return
 		}
 
 		data := models.FilterData{
-			Artists:         dataStore.GetArtistCards(),
+			Artists:         dataStore.GetAllArtists(),
 			UniqueLocations: dataStore.UniqueLocations(),
 			SelectedFilters: store.GetDefaultFilterParams(dataStore), // Updated call
-			TotalResults:    len(dataStore.GetArtistCards()),
+			TotalResults:    len(dataStore.GetAllArtists()),
 			CurrentPath:     r.URL.Path,
 			CurrentYear:     time.Now().Year(),
 		}
 
 		if err := utils.ExecuteFilterTemplate(w, data); err != nil {
-			ErrorHandler(w, ErrInternalServer, "Failed to process template")
+			ErrorHandler(w, models.ErrInternalServer, "Failed to process template")
 			return
 		}
 	}
@@ -40,20 +40,20 @@ func ArtistHandler(dataStore *store.DataStore) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		idStr := r.URL.Query().Get("id")
 		if idStr == "" {
-			ErrorHandler(w, ErrBadRequest, "Artist ID is required")
+			ErrorHandler(w, models.ErrBadRequest, "Artist ID is required")
 			return
 		}
 
 		id, err := strconv.Atoi(idStr)
 		if err != nil {
-			ErrorHandler(w, ErrInvalidID, "Invalid artist ID format")
+			ErrorHandler(w, models.ErrInvalidID, "Invalid artist ID format")
 			return
 		}
 
 		// dataStore.GetArtist now returns *models.Artist (pointer)
 		artist, err := dataStore.GetArtist(id)
 		if err != nil {
-			ErrorHandler(w, ErrNotFound, "Artist not found")
+			ErrorHandler(w, models.ErrNotFound, "Artist not found")
 			return
 		}
 
@@ -62,13 +62,13 @@ func ArtistHandler(dataStore *store.DataStore) http.HandlerFunc {
 
 		tmpl, err := template.ParseFiles("templates/artist.html")
 		if err != nil {
-			ErrorHandler(w, ErrInternalServer, "Failed to load template")
+			ErrorHandler(w, models.ErrInternalServer, "Failed to load template")
 			return
 		}
 
 		err = tmpl.Execute(w, artist)
 		if err != nil {
-			ErrorHandler(w, ErrInternalServer, "Failed to execute template")
+			ErrorHandler(w, models.ErrInternalServer, "Failed to execute template")
 			return
 		}
 	}

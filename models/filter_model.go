@@ -7,7 +7,7 @@ import (
 // FilterParams holds all possible filter parameters
 type FilterParams struct {
 	MemberCounts   []int    // Selected member counts
-	Locations      []string // Selected locations  
+	Locations      []string // Selected locations
 	CreationStart  int      // Creation date range start
 	CreationEnd    int      // Creation date range end
 	AlbumStartYear int      // First album year range start
@@ -22,17 +22,17 @@ func (fp *FilterParams) Validate() error {
 			return fmt.Errorf("member count must be between 1 and 8, got %d", count)
 		}
 	}
-	
+
 	// Validate creation date range
 	if fp.CreationStart > fp.CreationEnd {
 		return fmt.Errorf("creation start year (%d) cannot be greater than end year (%d)", fp.CreationStart, fp.CreationEnd)
 	}
-	
+
 	// Validate album year range
 	if fp.AlbumStartYear > fp.AlbumEndYear {
 		return fmt.Errorf("album start year (%d) cannot be greater than end year (%d)", fp.AlbumStartYear, fp.AlbumEndYear)
 	}
-	
+
 	return nil
 }
 
@@ -46,7 +46,7 @@ func (fp *FilterParams) IsEmpty() bool {
 
 // FilterData represents all the data needed for the filter page
 type FilterData struct {
-	Artists         []ArtistCard
+	Artists         []*Artist
 	UniqueLocations []string
 	SelectedFilters FilterParams
 	TotalResults    int

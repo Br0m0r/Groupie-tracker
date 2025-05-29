@@ -5,8 +5,6 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
-
-	"groupie/models"
 )
 
 // ParseIntDefault safely parses a string to int with a default value
@@ -43,22 +41,4 @@ func GetMemberCounts(r *http.Request) []int {
 		}
 	}
 	return counts
-}
-
-// ConvertToCards converts artist pointers to ArtistCards (UPDATED for pointers)
-func ConvertToCards(artists []*models.Artist) []models.ArtistCard {
-	cards := make([]models.ArtistCard, len(artists))
-	for i, artist := range artists {
-		cards[i] = artist.ToArtistCard() // artist is now a pointer
-	}
-	return cards
-}
-
-// ConvertToCardsFromValues converts artist values to ArtistCards (for backward compatibility)
-func ConvertToCardsFromValues(artists []models.Artist) []models.ArtistCard {
-	cards := make([]models.ArtistCard, len(artists))
-	for i, artist := range artists {
-		cards[i] = artist.ToArtistCard() // artist is a value
-	}
-	return cards
 }
