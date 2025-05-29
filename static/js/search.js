@@ -3,16 +3,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const suggestionsList = document.querySelector('.suggestions-list');
     const searchContainer = document.querySelector('.search-suggestions');
 
-   
+    // Simple search suggestions - just visual, no clicking
     searchInput.addEventListener('input', (e) => {
         const query = e.target.value.trim();
         
+        // Hide suggestions if query is empty
         if (query === '') {
-            suggestionsList.innerHTML = '';
-            searchContainer.style.display = 'none';
+            hideResults();
             return;
         }
 
+        // Show loading state (optional)
+        showResults();
+        suggestionsList.innerHTML = '<div class="loading">Searching...</div>';
+
+        // Make AJAX request for suggestions
         fetch(`/search?q=${encodeURIComponent(query)}`, {
             headers: {
                 'X-Requested-With': 'XMLHttpRequest'
@@ -20,31 +25,54 @@ document.addEventListener('DOMContentLoaded', () => {
         })
         .then(response => response.json())
         .then(results => {
-            if (results.length === 0) {
-                suggestionsList.innerHTML = '';
-                searchContainer.style.display = 'none';
-                return;
-            }
-
-            searchContainer.style.display = 'block';
-            // Render all results without limiting to 5
-            suggestionsList.innerHTML = results.map(suggestion => `
-                <div class="suggestion-item">
-                    <span class="suggestion-text">${suggestion.text}</span>
-                    <span class="suggestion-type">${suggestion.type}</span>
-                </div>
-            `).join('');
+            displayResults(results);
         })
         .catch(error => {
-            console.error('Failed to fetch suggestions:', error);
-            searchContainer.style.display = 'none';
+            console.error('Search error:', error);
+            suggestionsList.innerHTML = '<div class="error">Search failed</div>';
         });
     });
 
-    // Close suggestions when clicking outside
+    // Display the search results
+    function displayResults(results) {
+        if (!results || results.length === 0) {
+            suggestionsList.innerHTML = '<div class="no-results">No suggestions found</div>';
+            return;
+        }
+
+        // Create simple HTML for each result
+        const html = results.map(result => `
+            <div class="suggestion-item">
+                <div class="suggestion-text">${result.Text || 'Unknown'}</div>
+                <div class="suggestion-type">${result.Type || 'unknown'}</div>
+            </div>
+        `).join('');
+
+        suggestionsList.innerHTML = html;
+    }
+
+    // Show the suggestions container
+    function showResults() {
+        searchContainer.style.display = 'block';
+    }
+
+    // Hide the suggestions container
+    function hideResults() {
+        searchContainer.style.display = 'none';
+        suggestionsList.innerHTML = '';
+    }
+
+    // Hide suggestions when clicking outside
     document.addEventListener('click', (e) => {
         if (!searchContainer.contains(e.target) && !searchInput.contains(e.target)) {
-            searchContainer.style.display = 'none';
+            hideResults();
+        }
+    });
+
+    // Hide suggestions when pressing Escape
+    searchInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            hideResults();
         }
     });
 });

@@ -44,7 +44,7 @@ func GetLocationCoordinates(dataStore *store.DataStore) http.HandlerFunc {
 				fmt.Printf("Error getting coordinates for %s: %v\n", location, err)
 				continue // Skip this location if coordinates cannot be retrieved
 			}
-			coordinates = append(coordinates, coords)
+			coordinates = append(coordinates, *coords)
 		}
 
 		// Send response

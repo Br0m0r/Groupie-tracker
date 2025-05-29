@@ -1,4 +1,3 @@
-// Package handlers provides HTTP request handlers for the web application
 package handlers
 
 import (
@@ -9,26 +8,27 @@ import (
 
 	"groupie/models"
 	"groupie/store"
+	"groupie/utils"
 )
 
 // HomeHandler serves the main page with artist listings
 func HomeHandler(dataStore *store.DataStore) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/" {
-			ErrorHandler(w, ErrNotFound, "Page not exist")
+			ErrorHandler(w, ErrNotFound, "Page does not exist")
 			return
 		}
 
 		data := models.FilterData{
 			Artists:         dataStore.GetArtistCards(),
 			UniqueLocations: dataStore.UniqueLocations(),
-			SelectedFilters: getDefaultFilterParams(dataStore),
+			SelectedFilters: store.GetDefaultFilterParams(dataStore), // Updated call
 			TotalResults:    len(dataStore.GetArtistCards()),
 			CurrentPath:     r.URL.Path,
 			CurrentYear:     time.Now().Year(),
 		}
 
-		if err := executeFilterTemplate(w, data); err != nil {
+		if err := utils.ExecuteFilterTemplate(w, data); err != nil {
 			ErrorHandler(w, ErrInternalServer, "Failed to process template")
 			return
 		}
@@ -50,11 +50,14 @@ func ArtistHandler(dataStore *store.DataStore) http.HandlerFunc {
 			return
 		}
 
+		// dataStore.GetArtist now returns *models.Artist (pointer)
 		artist, err := dataStore.GetArtist(id)
 		if err != nil {
 			ErrorHandler(w, ErrNotFound, "Artist not found")
 			return
 		}
+
+		// artist is now a pointer, but templates handle this automatically
 		artist.CurrentYear = time.Now().Year()
 
 		tmpl, err := template.ParseFiles("templates/artist.html")

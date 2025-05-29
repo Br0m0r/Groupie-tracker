@@ -1,4 +1,3 @@
-// handlers/search.go
 package handlers
 
 import (
@@ -22,8 +21,21 @@ func SearchHandler(dataStore *store.DataStore) http.HandlerFunc {
 		// Handle AJAX requests for search suggestions
 		if r.Header.Get("X-Requested-With") == "XMLHttpRequest" {
 			results := searchAllData(dataStore, query)
+
+			// DEBUG: Log what we're returning
+			fmt.Printf("AJAX Search: query='%s', results=%d\n", query, len(results))
+			if len(results) > 0 {
+				fmt.Printf("First result: %+v\n", results[0])
+			}
+
+			// Set proper headers for JSON response
 			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(results)
+			w.Header().Set("Cache-Control", "no-cache")
+
+			if err := json.NewEncoder(w).Encode(results); err != nil {
+				fmt.Printf("JSON encoding error: %v\n", err)
+				w.Write([]byte("[]"))
+			}
 			return
 		}
 
@@ -76,22 +88,22 @@ func SearchHandler(dataStore *store.DataStore) http.HandlerFunc {
 	}
 }
 
+// searchAllData performs search across all artist data (UPDATED for pointers)
 func searchAllData(dataStore *store.DataStore, query string) []models.SearchResult {
 	// Early return for empty queries
 	if query == "" {
-		return nil
+		return []models.SearchResult{}
 	}
 
+	// Get all artists (now returns []*models.Artist)
 	artists := dataStore.GetAllArtists()
 	query = strings.ToLower(query)
 	isSingleLetter := len([]rune(query)) == 1
 
-	// Pre-allocate results slice with estimated capacity
-	// Average estimated size based on expected matches per artist
-	estimatedSize := len(artists) * 2
-	results := make([]models.SearchResult, 0, estimatedSize)
+	// Pre-allocate results slice
+	results := make([]models.SearchResult, 0, len(artists)*2)
 
-	// Create a single searchMatch helper function
+	// Helper function for matching
 	searchMatch := func(value, query string, isSingleLetter bool) bool {
 		if isSingleLetter {
 			return strings.HasPrefix(strings.ToLower(value), query)
@@ -99,7 +111,7 @@ func searchAllData(dataStore *store.DataStore, query string) []models.SearchResu
 		return strings.Contains(strings.ToLower(value), query)
 	}
 
-	// Process each artist
+	// Process each artist (artist is now a pointer)
 	for _, artist := range artists {
 		// Artist name search
 		if searchMatch(artist.Name, query, isSingleLetter) {
@@ -164,13 +176,13 @@ func searchAllData(dataStore *store.DataStore, query string) []models.SearchResu
 		}
 	}
 
-	// Sort the results by type if needed
+	// Sort results by type priority
 	sortResultsByType(results)
 
 	return results
 }
 
-// Helper function to sort results by type
+// sortResultsByType sorts results with a priority order
 func sortResultsByType(results []models.SearchResult) {
 	// Define type priorities
 	typePriority := map[string]int{

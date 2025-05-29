@@ -4,131 +4,172 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"time"
 
 	"groupie/models"
 )
 
-// APIRepository defines the methods we use from the API client.
+// APIRepository defines the methods for API data fetching
 type APIRepository interface {
-	GetAPIIndex() (models.ApiIndex, error)
+	GetAPIIndex() (*models.ApiIndex, error)
 	FetchArtists(endpoint string) ([]models.Artist, error)
+	FetchLocations(endpoint string) ([]LocationData, error)
+	FetchDates(endpoint string) ([]DateData, error)
+	FetchRelations(endpoint string) ([]RelationData, error)
 }
 
 // APIRepositoryImpl handles fetching data from external API endpoints
 type APIRepositoryImpl struct {
-	baseURL string
+	baseURL    string
+	httpClient *http.Client
 }
 
 // NewAPIRepository creates a new API repository instance
 func NewAPIRepository(baseURL string) *APIRepositoryImpl {
-	return &APIRepositoryImpl{baseURL: baseURL}
+	return &APIRepositoryImpl{
+		baseURL: baseURL,
+		httpClient: &http.Client{
+			Timeout: 30 * time.Second, // Configurable timeout
+		},
+	}
 }
 
 // GetAPIIndex fetches the main API index with all endpoints
-func (api *APIRepositoryImpl) GetAPIIndex() (models.ApiIndex, error) {
+func (api *APIRepositoryImpl) GetAPIIndex() (*models.ApiIndex, error) {
 	var index models.ApiIndex
-	resp, err := http.Get(api.baseURL)
+
+	resp, err := api.httpClient.Get(api.baseURL)
 	if err != nil {
-		return index, fmt.Errorf("failed to fetch API index: %v", err)
+		return nil, fmt.Errorf("failed to fetch API index: %w", err)
 	}
 	defer resp.Body.Close()
 
-	if err := json.NewDecoder(resp.Body).Decode(&index); err != nil {
-		return index, fmt.Errorf("failed to decode API index: %v", err)
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("API index request failed with status %d", resp.StatusCode)
 	}
 
-	return index, nil
+	if err := json.NewDecoder(resp.Body).Decode(&index); err != nil {
+		return nil, fmt.Errorf("failed to decode API index: %w", err)
+	}
+
+	// Validate the response
+	if err := index.Validate(); err != nil {
+		return nil, fmt.Errorf("invalid API index: %w", err)
+	}
+
+	return &index, nil
 }
 
 // FetchArtists retrieves artist data from the API
 func (api *APIRepositoryImpl) FetchArtists(url string) ([]models.Artist, error) {
 	var artists []models.Artist
-	resp, err := http.Get(url)
+
+	resp, err := api.httpClient.Get(url)
 	if err != nil {
-		return nil, fmt.Errorf("failed to fetch artists: %v", err)
+		return nil, fmt.Errorf("failed to fetch artists: %w", err)
 	}
 	defer resp.Body.Close()
 
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("artists request failed with status %d", resp.StatusCode)
+	}
+
 	if err := json.NewDecoder(resp.Body).Decode(&artists); err != nil {
-		return nil, fmt.Errorf("failed to decode artists: %v", err)
+		return nil, fmt.Errorf("failed to decode artists: %w", err)
+	}
+
+	// Basic validation on artists
+	for i, artist := range artists {
+		if err := artist.Validate(); err != nil {
+			return nil, fmt.Errorf("invalid artist at index %d: %w", i, err)
+		}
 	}
 
 	return artists, nil
 }
 
-// FetchLocations retrieves location data from the API
-func (api *APIRepositoryImpl) FetchLocations(url string) ([]struct {
+// LocationData represents location data from API
+type LocationData struct {
 	ID        int      `json:"id"`
 	Locations []string `json:"locations"`
-}, error,
-) {
+}
+
+// FetchLocations retrieves location data from the API
+func (api *APIRepositoryImpl) FetchLocations(url string) ([]LocationData, error) {
 	var response struct {
-		Index []struct {
-			ID        int      `json:"id"`
-			Locations []string `json:"locations"`
-		} `json:"index"`
+		Index []LocationData `json:"index"`
 	}
 
-	resp, err := http.Get(url)
+	resp, err := api.httpClient.Get(url)
 	if err != nil {
-		return nil, fmt.Errorf("failed to fetch locations: %v", err)
+		return nil, fmt.Errorf("failed to fetch locations: %w", err)
 	}
 	defer resp.Body.Close()
 
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("locations request failed with status %d", resp.StatusCode)
+	}
+
 	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
-		return nil, fmt.Errorf("failed to decode locations: %v", err)
+		return nil, fmt.Errorf("failed to decode locations: %w", err)
 	}
 
 	return response.Index, nil
+}
+
+// DateData represents date data from API
+type DateData struct {
+	ID    int      `json:"id"`
+	Dates []string `json:"dates"`
 }
 
 // FetchDates retrieves concert dates from the API
-func (api *APIRepositoryImpl) FetchDates(url string) ([]struct {
-	ID    int      `json:"id"`
-	Dates []string `json:"dates"`
-}, error,
-) {
+func (api *APIRepositoryImpl) FetchDates(url string) ([]DateData, error) {
 	var response struct {
-		Index []struct {
-			ID    int      `json:"id"`
-			Dates []string `json:"dates"`
-		} `json:"index"`
+		Index []DateData `json:"index"`
 	}
 
-	resp, err := http.Get(url)
+	resp, err := api.httpClient.Get(url)
 	if err != nil {
-		return nil, fmt.Errorf("failed to fetch dates: %v", err)
+		return nil, fmt.Errorf("failed to fetch dates: %w", err)
 	}
 	defer resp.Body.Close()
 
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("dates request failed with status %d", resp.StatusCode)
+	}
+
 	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
-		return nil, fmt.Errorf("failed to decode dates: %v", err)
+		return nil, fmt.Errorf("failed to decode dates: %w", err)
 	}
 
 	return response.Index, nil
 }
 
-// FetchRelations retrieves date-location relations from the API
-func (api *APIRepositoryImpl) FetchRelations(url string) ([]struct {
+// RelationData represents relation data from API
+type RelationData struct {
 	ID             int                 `json:"id"`
 	DatesLocations map[string][]string `json:"datesLocations"`
-}, error,
-) {
+}
+
+// FetchRelations retrieves date-location relations from the API
+func (api *APIRepositoryImpl) FetchRelations(url string) ([]RelationData, error) {
 	var response struct {
-		Index []struct {
-			ID             int                 `json:"id"`
-			DatesLocations map[string][]string `json:"datesLocations"`
-		} `json:"index"`
+		Index []RelationData `json:"index"`
 	}
 
-	resp, err := http.Get(url)
+	resp, err := api.httpClient.Get(url)
 	if err != nil {
-		return nil, fmt.Errorf("failed to fetch relations: %v", err)
+		return nil, fmt.Errorf("failed to fetch relations: %w", err)
 	}
 	defer resp.Body.Close()
 
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("relations request failed with status %d", resp.StatusCode)
+	}
+
 	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
-		return nil, fmt.Errorf("failed to decode relations: %v", err)
+		return nil, fmt.Errorf("failed to decode relations: %w", err)
 	}
 
 	return response.Index, nil

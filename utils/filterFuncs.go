@@ -45,27 +45,20 @@ func GetMemberCounts(r *http.Request) []int {
 	return counts
 }
 
-// Helper function to convert Artists to ArtistCards
-func ConvertToCards(artists []models.Artist) []models.ArtistCard {
+// ConvertToCards converts artist pointers to ArtistCards (UPDATED for pointers)
+func ConvertToCards(artists []*models.Artist) []models.ArtistCard {
 	cards := make([]models.ArtistCard, len(artists))
 	for i, artist := range artists {
-		cards[i] = models.ArtistCard{
-			ID:    artist.ID,
-			Name:  artist.Name,
-			Image: artist.Image,
-		}
+		cards[i] = artist.ToArtistCard() // artist is now a pointer
 	}
 	return cards
 }
 
-// Return the default filter parameters.
-func GetDefaultFilterParams() models.FilterParams {
-	return models.FilterParams{
-		CreationStart:  1950,
-		CreationEnd:    2024,
-		AlbumStartYear: 1950,
-		AlbumEndYear:   2024,
-		MemberCounts:   []int{},    // Empty slice - no members selected
-		Locations:      []string{}, // Empty slice - no locations selected
+// ConvertToCardsFromValues converts artist values to ArtistCards (for backward compatibility)
+func ConvertToCardsFromValues(artists []models.Artist) []models.ArtistCard {
+	cards := make([]models.ArtistCard, len(artists))
+	for i, artist := range artists {
+		cards[i] = artist.ToArtistCard() // artist is a value
 	}
+	return cards
 }

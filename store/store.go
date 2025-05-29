@@ -3,22 +3,26 @@ package store
 import (
 	"fmt"
 	"log"
+	"time"
 
+	"groupie/config"
 	"groupie/models"
 	"groupie/repository"
 )
 
-var DefaultAPIBaseURL = "https://groupietrackers.herokuapp.com/api"
-
+// DataStore manages all data repositories and provides unified access
 type DataStore struct {
 	apiRepo         *repository.APIRepositoryImpl
-	artistRepo      *repository.ArtistRepositoryImpl
-	coordinatesRepo *repository.CoordinatesRepositoryImpl
+	artistRepo      *repository.ArtistRepository
+	coordinatesRepo *repository.CoordinatesRepository
 }
 
+// New creates a new DataStore instance
 func New() *DataStore {
+	cfg := config.Get() // Use our config package
+
 	return &DataStore{
-		apiRepo:         repository.NewAPIRepository(DefaultAPIBaseURL),
+		apiRepo:         repository.NewAPIRepository(cfg.API.BaseURL),
 		artistRepo:      repository.NewArtistRepository(),
 		coordinatesRepo: repository.NewCoordinatesRepository(),
 	}
@@ -26,24 +30,25 @@ func New() *DataStore {
 
 // Initialize fetches and processes API data for all repositories
 func (ds *DataStore) Initialize() error {
-	// 1. Get API index to find all endpoints
+	// Get API index to find all endpoints
 	index, err := ds.apiRepo.GetAPIIndex()
 	if err != nil {
-		return fmt.Errorf("failed to fetch API index: %v", err)
+		return fmt.Errorf("failed to fetch API index: %w", err)
 	}
 
-	// 2. Initialize the artist repository with the API data
-	if err := ds.artistRepo.LoadData(index); err != nil {
-		return fmt.Errorf("failed to load artist data: %v", err)
+	// Initialize the artist repository with the API data
+	if err := ds.artistRepo.LoadData(*index); err != nil {
+		return fmt.Errorf("failed to load artist data: %w", err)
 	}
 
-	// 3. Start prefetching coordinates for all unique locations
+	// Start prefetching coordinates for all unique locations
 	uniqueLocations := ds.artistRepo.GetUniqueLocations()
 	ds.coordinatesRepo.PrefetchLocations(uniqueLocations)
 
 	return nil
 }
 
+// SwapData refreshes data by swapping in new artist repository while preserving coordinates cache
 func (ds *DataStore) SwapData(newStore *DataStore) {
 	log.Println("Data refresh started")
 
@@ -51,15 +56,15 @@ func (ds *DataStore) SwapData(newStore *DataStore) {
 	oldArtistCount := len(ds.artistRepo.GetAllArtists())
 	oldCoordCount := ds.coordinatesRepo.CacheSize()
 
-	// Swap in the new artists
+	// Swap in the new artists repository
 	ds.artistRepo = newStore.artistRepo
 
-	// Now discover any locations we didn’t have yet
+	// Discover any new locations we didn't have yet
 	newLocations := ds.artistRepo.GetUniqueLocations()
 	added := 0
 	for _, loc := range newLocations {
 		if !ds.coordinatesRepo.Has(loc) {
-			// this will fetch & cache under the hood
+			// Fetch and cache new location
 			if _, err := ds.coordinatesRepo.Get(loc); err == nil {
 				added++
 			}
@@ -78,28 +83,28 @@ func (ds *DataStore) SwapData(newStore *DataStore) {
 	)
 }
 
-// GetArtistCards delegates to ArtistRepository
+// GetArtistCards returns lightweight artist cards for list displays
 func (ds *DataStore) GetArtistCards() []models.ArtistCard {
 	return ds.artistRepo.GetArtistCards()
 }
 
-// GetArtist delegates to ArtistRepository
-func (ds *DataStore) GetArtist(id int) (models.Artist, error) {
+// GetArtist retrieves a single artist by ID (returns pointer now)
+func (ds *DataStore) GetArtist(id int) (*models.Artist, error) {
 	return ds.artistRepo.GetArtistByID(id)
 }
 
-// GetAllArtists delegates to ArtistRepository
-func (ds *DataStore) GetAllArtists() []models.Artist {
+// GetAllArtists returns all artists (returns pointers now)
+func (ds *DataStore) GetAllArtists() []*models.Artist {
 	return ds.artistRepo.GetAllArtists()
 }
 
-// GetMinYears delegates to ArtistRepository
+// GetMinYears returns cached minimum creation and album years
 func (ds *DataStore) GetMinYears() (minCreation, minAlbum int) {
 	return ds.artistRepo.GetMinYears()
 }
 
-// GetLocationCoordinates delegates to CoordinatesRepository
-func (ds *DataStore) GetLocationCoordinates(location string) (models.Coordinates, error) {
+// GetLocationCoordinates retrieves coordinates for a location
+func (ds *DataStore) GetLocationCoordinates(location string) (*models.Coordinates, error) {
 	return ds.coordinatesRepo.Get(location)
 }
 
@@ -108,56 +113,75 @@ func (ds *DataStore) UniqueLocations() []string {
 	return ds.artistRepo.GetUniqueLocations()
 }
 
-// GetArtistsByLocation delegates to ArtistRepository
-func (ds *DataStore) GetArtistsByLocation(location string) []models.Artist {
+// GetArtistsByLocation retrieves artists who performed at the given location (returns pointers)
+func (ds *DataStore) GetArtistsByLocation(location string) []*models.Artist {
 	return ds.artistRepo.GetArtistsByLocation(location)
 }
 
-// GetArtistsByMemberCount delegates to ArtistRepository
-func (ds *DataStore) GetArtistsByMemberCount(count int) []models.Artist {
+// GetArtistsByMemberCount retrieves artists matching the given member count (returns pointers)
+func (ds *DataStore) GetArtistsByMemberCount(count int) []*models.Artist {
 	return ds.artistRepo.GetArtistsByMemberCount(count)
 }
 
-// GetArtistsByCreationYear delegates to ArtistRepository
-func (ds *DataStore) GetArtistsByCreationYear(year int) []models.Artist {
+// GetArtistsByCreationYear retrieves artists matching the given creation year (returns pointers)
+func (ds *DataStore) GetArtistsByCreationYear(year int) []*models.Artist {
 	return ds.artistRepo.GetArtistsByCreationYear(year)
 }
 
-// GetArtistsByAlbumYear delegates to ArtistRepository
-func (ds *DataStore) GetArtistsByAlbumYear(year int) []models.Artist {
+// GetArtistsByAlbumYear retrieves artists matching the given first-album year (returns pointers)
+func (ds *DataStore) GetArtistsByAlbumYear(year int) []*models.Artist {
 	return ds.artistRepo.GetArtistsByAlbumYear(year)
 }
 
-// RefreshData fetches the latest artist list and merges in only the new entries.
-// It then fetches coordinates for any new locations, returning counts of new
-// artists and new coords pulled in.
+// RefreshData fetches the latest artist list and reloads all data
 func (ds *DataStore) RefreshData() (newArtists, newCoords int, err error) {
-    // 1) Get fresh API index
-    index, err := ds.apiRepo.GetAPIIndex()
-    if err != nil {
-        return 0, 0, fmt.Errorf("failed to fetch API index: %v", err)
-    }
+	// Get fresh API index
+	index, err := ds.apiRepo.GetAPIIndex()
+	if err != nil {
+		return 0, 0, fmt.Errorf("failed to fetch API index: %w", err)
+	}
 
-    // 2) Fetch the full artist list from the API
-    fresh, err := ds.apiRepo.FetchArtists(index.Artists)
-    if err != nil {
-        return 0, 0, fmt.Errorf("failed to fetch artists: %v", err)
-    }
+	// Create new repository and load fresh data
+	newRepo := repository.NewArtistRepository()
+	if err := newRepo.LoadData(*index); err != nil {
+		return 0, 0, fmt.Errorf("failed to load fresh artist data: %w", err)
+	}
 
-    // 3) Merge in only the truly new artists
-    added := ds.artistRepo.AddArtists(fresh)
-    newArtists = len(added)
+	// Count changes (simplified - just compare total counts)
+	oldCount := len(ds.artistRepo.GetAllArtists())
+	newCount := len(newRepo.GetAllArtists())
+	newArtists = newCount - oldCount
+	if newArtists < 0 {
+		newArtists = 0 // Handle case where count decreased
+	}
 
-    // 4) For each new artist, fetch any coords we don't already have
-    for _, a := range added {
-        for _, loc := range a.LocationsList {
-            if !ds.coordinatesRepo.Has(loc) {
-                if _, err := ds.coordinatesRepo.Get(loc); err == nil {
-                    newCoords++
-                }
-            }
-        }
-    }
+	// Swap the repository
+	ds.artistRepo = newRepo
 
-    return newArtists, newCoords, nil
+	// Check for new locations to cache
+	newLocations := ds.artistRepo.GetUniqueLocations()
+	for _, loc := range newLocations {
+		if !ds.coordinatesRepo.Has(loc) {
+			if _, err := ds.coordinatesRepo.Get(loc); err == nil {
+				newCoords++
+			}
+		}
+	}
+
+	log.Printf("Refresh complete: %d new artists, %d new coordinates", newArtists, newCoords)
+	return newArtists, newCoords, nil
+}
+
+// Update the function signature
+func GetDefaultFilterParams(dataStore *DataStore) models.FilterParams {
+	minCreation, minAlbum := dataStore.GetMinYears()
+
+	return models.FilterParams{
+		CreationStart:  minCreation, // Real minimum from data!
+		CreationEnd:    time.Now().Year(),
+		AlbumStartYear: minAlbum, // Real minimum from data!
+		AlbumEndYear:   time.Now().Year(),
+		MemberCounts:   []int{},
+		Locations:      []string{},
+	}
 }

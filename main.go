@@ -4,31 +4,38 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"time"
 
+	"groupie/config"
 	"groupie/server"
 )
 
-// API base URL and server port
-const (
-	port = ":8080"
-)
-
 func main() {
-	// Configure and start HTTP server
-	mux := server.SetupServer()
-	server := &http.Server{
-		Addr:         port,
-		Handler:      mux,
-		ReadTimeout:  15 * time.Second,
-		WriteTimeout: 15 * time.Second,
-		IdleTimeout:  60 * time.Second,
+	// Load configuration
+	cfg, err := config.LoadConfig()
+	if err != nil {
+		log.Fatalf("Failed to load config: %v", err)
 	}
 
-	fmt.Printf("Server starting on http://localhost%s\n", port)
+	fmt.Printf("Starting server with config:\n")
+	fmt.Printf("  Environment: %s\n", cfg.App.Environment)
+	fmt.Printf("  Port: %s\n", cfg.Server.Port)
+	fmt.Printf("  API URL: %s\n", cfg.API.BaseURL)
+	fmt.Printf("  Refresh Interval: %v\n", cfg.Cache.RefreshInterval)
+
+	// Configure and start HTTP server using config values
+	mux := server.SetupServer()
+	httpServer := &http.Server{
+		Addr:         cfg.Server.Port,
+		Handler:      mux,
+		ReadTimeout:  cfg.Server.ReadTimeout,
+		WriteTimeout: cfg.Server.WriteTimeout,
+		IdleTimeout:  cfg.Server.IdleTimeout,
+	}
+
+	fmt.Printf("Server starting on http://localhost%s\n", cfg.Server.Port)
 	fmt.Println("Press Ctrl+C to stop the server")
 
-	if err := server.ListenAndServe(); err != nil {
+	if err := httpServer.ListenAndServe(); err != nil {
 		log.Fatalf("Server failed to start: %v", err)
 	}
 }
