@@ -1,0 +1,4 @@
+must take the max member number of the artists
+
+
+should we make an extra repo for the mapartists !   

@@ -21,12 +21,6 @@ func FilterHandler(dataStore *store.DataStore) http.HandlerFunc {
 		// Extract filter parameters
 		params := utils.ExtractFilterParams(r)
 
-		// Validate filter parameters
-		if err := params.Validate(); err != nil {
-			ErrorHandler(w, models.ErrBadRequest, err.Error())
-			return
-		}
-
 		// Get default params for comparison
 		defaultParams := store.GetDefaultFilterParams(dataStore)
 
@@ -108,7 +102,7 @@ func FilterHandler(dataStore *store.DataStore) http.HandlerFunc {
 
 		// Prepare template data
 		data := models.FilterData{
-			Artists:         filteredArtists,	
+			Artists:         filteredArtists,
 			UniqueLocations: dataStore.UniqueLocations(),
 			SelectedFilters: params,
 			TotalResults:    len(filteredArtists),

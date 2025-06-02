@@ -43,11 +43,6 @@ func (api *APIRepository) GetAPIIndex() (*models.ApiIndex, error) {
 		return nil, fmt.Errorf("failed to decode API index: %w", err)
 	}
 
-	// Validate the response
-	if err := index.Validate(); err != nil {
-		return nil, fmt.Errorf("invalid API index: %w", err)
-	}
-
 	return &index, nil
 }
 

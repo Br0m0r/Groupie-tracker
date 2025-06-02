@@ -1,5 +1,0 @@
-!!! compile time !!!
-
-time go build main.go 
-
- 

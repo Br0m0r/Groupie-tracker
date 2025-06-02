@@ -58,9 +58,6 @@ func (cr *CoordinatesRepository) Get(location string) (*models.Coordinates, erro
 	}
 
 	// Validate before caching
-	if err := coords.Validate(); err != nil {
-		return nil, fmt.Errorf("invalid coordinates for %s: %w", location, err)
-	}
 
 	// Cache the result
 	cr.mu.Lock()
@@ -90,12 +87,6 @@ func (cr *CoordinatesRepository) PrefetchLocations(locations []string) {
 			coords, err := cr.fetchFromAPI(location)
 			if err != nil {
 				//		log.Printf("Failed to prefetch coordinates for %s: %v", location, err)
-				continue
-			}
-
-			// Validate and cache
-			if err := coords.Validate(); err != nil {
-				// log.Printf("Invalid coordinates for %s: %v", location, err)
 				continue
 			}
 
