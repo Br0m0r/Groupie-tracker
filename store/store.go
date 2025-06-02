@@ -14,7 +14,7 @@ import (
 
 // DataStore manages all data repositories and provides unified access
 type DataStore struct {
-	apiRepo         *repository.APIRepositoryImpl
+	apiRepo         *repository.APIRepository
 	artistRepo      *repository.ArtistRepository
 	coordinatesRepo *repository.CoordinatesRepository
 }

@@ -10,14 +10,14 @@ import (
 )
 
 // APIRepositoryImpl handles fetching data from external API endpoints
-type APIRepositoryImpl struct {
+type APIRepository struct {
 	baseURL    string
 	httpClient *http.Client
 }
 
 // NewAPIRepository creates a new API repository instance
-func NewAPIRepository(baseURL string) *APIRepositoryImpl {
-	return &APIRepositoryImpl{
+func NewAPIRepository(baseURL string) *APIRepository {
+	return &APIRepository{
 		baseURL: baseURL,
 		httpClient: &http.Client{
 			Timeout: config.SERVER_READ_TIMEOUT, // Configurable timeout
@@ -26,7 +26,7 @@ func NewAPIRepository(baseURL string) *APIRepositoryImpl {
 }
 
 // GetAPIIndex fetches the main API index with all endpoints
-func (api *APIRepositoryImpl) GetAPIIndex() (*models.ApiIndex, error) {
+func (api *APIRepository) GetAPIIndex() (*models.ApiIndex, error) {
 	var index models.ApiIndex
 
 	resp, err := api.httpClient.Get(api.baseURL)
@@ -52,7 +52,7 @@ func (api *APIRepositoryImpl) GetAPIIndex() (*models.ApiIndex, error) {
 }
 
 // FetchArtists retrieves artist data from the API
-func (api *APIRepositoryImpl) FetchArtists(url string) ([]models.Artist, error) {
+func (api *APIRepository) FetchArtists(url string) ([]models.Artist, error) {
 	var artists []models.Artist
 
 	resp, err := api.httpClient.Get(url)
@@ -79,7 +79,7 @@ type LocationData struct {
 }
 
 // FetchLocations retrieves location data from the API
-func (api *APIRepositoryImpl) FetchLocations(url string) ([]LocationData, error) {
+func (api *APIRepository) FetchLocations(url string) ([]LocationData, error) {
 	var response struct {
 		Index []LocationData `json:"index"`
 	}
@@ -108,7 +108,7 @@ type DateData struct {
 }
 
 // FetchDates retrieves concert dates from the API
-func (api *APIRepositoryImpl) FetchDates(url string) ([]DateData, error) {
+func (api *APIRepository) FetchDates(url string) ([]DateData, error) {
 	var response struct {
 		Index []DateData `json:"index"`
 	}
@@ -137,7 +137,7 @@ type RelationData struct {
 }
 
 // FetchRelations retrieves date-location relations from the API
-func (api *APIRepositoryImpl) FetchRelations(url string) ([]RelationData, error) {
+func (api *APIRepository) FetchRelations(url string) ([]RelationData, error) {
 	var response struct {
 		Index []RelationData `json:"index"`
 	}
