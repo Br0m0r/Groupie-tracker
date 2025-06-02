@@ -21,10 +21,8 @@ type DataStore struct {
 
 // New creates a new DataStore instance
 func New() *DataStore {
-	cfg := config.GetAPIBaseURL()
-
 	return &DataStore{
-		apiRepo:         repository.NewAPIRepository(cfg),
+		apiRepo:         repository.NewAPIRepository(config.API_BASE_URL),
 		artistRepo:      repository.NewArtistRepository(),
 		coordinatesRepo: repository.NewCoordinatesRepository(),
 	}

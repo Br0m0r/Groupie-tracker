@@ -10,22 +10,19 @@ import (
 )
 
 func main() {
-	// Load configuration
-	if err := config.LoadConfig(); err != nil {
-		log.Fatalf("Failed to load config: %v", err)
-	}
+
 
 	// Configure and start HTTP server using config values
 	mux := server.SetupServer()
 	httpServer := &http.Server{
-		Addr:         config.GetPort(),
+		Addr:         config.PORT,
 		Handler:      mux,
-		ReadTimeout:  config.GetServerReadTimeout(),
-		WriteTimeout: config.GetServerWriteTimeout(),
-		IdleTimeout:  config.GetServerIdleTimeout(),
+		ReadTimeout:  config.SERVER_READ_TIMEOUT,
+		WriteTimeout: config.SERVER_WRITE_TIMEOUT,
+		IdleTimeout:  config.SERVER_IDLE_TIMEOUT,
 	}
 
-	fmt.Printf("Server starting on http://localhost%s\n", config.GetPort())
+	fmt.Printf("Server starting on http://localhost%s\n", config.PORT)
 	fmt.Println("Press Ctrl+C to stop the server")
 
 	if err := httpServer.ListenAndServe(); err != nil {

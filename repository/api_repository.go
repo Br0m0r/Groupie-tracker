@@ -4,20 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"time"
 
+	"groupie/config"
 	"groupie/models"
 )
-
-// APIRepository defines the methods for API data fetching
-type APIRepositoryInterface interface {
-	GetAPIIndex() (*models.ApiIndex, error)
-	FetchArtists(endpoint string) ([]models.Artist, error)
-	FetchLocations(endpoint string) ([]LocationData, error)
-	FetchDates(endpoint string) ([]DateData, error)
-	FetchRelations(endpoint string) ([]RelationData, error)
-	// Additional methods can be added as needed
-}
 
 // APIRepositoryImpl handles fetching data from external API endpoints
 type APIRepositoryImpl struct {
@@ -30,7 +20,7 @@ func NewAPIRepository(baseURL string) *APIRepositoryImpl {
 	return &APIRepositoryImpl{
 		baseURL: baseURL,
 		httpClient: &http.Client{
-			Timeout: 30 * time.Second, // Configurable timeout
+			Timeout: config.SERVER_READ_TIMEOUT, // Configurable timeout
 		},
 	}
 }
@@ -77,13 +67,6 @@ func (api *APIRepositoryImpl) FetchArtists(url string) ([]models.Artist, error) 
 
 	if err := json.NewDecoder(resp.Body).Decode(&artists); err != nil {
 		return nil, fmt.Errorf("failed to decode artists: %w", err)
-	}
-
-	// Basic validation on artists
-	for i, artist := range artists {
-		if err := artist.Validate(); err != nil {
-			return nil, fmt.Errorf("invalid artist at index %d: %w", i, err)
-		}
 	}
 
 	return artists, nil

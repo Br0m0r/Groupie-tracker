@@ -11,15 +11,6 @@ import (
 
 	"groupie/models"
 )
-type CoordinatesRepositoryInterface interface {
-	Has(location string) bool
-	CacheSize() int
-	Get(location string) (*models.Coordinates, error)
-	PrefetchLocations(locations []string)
-	GetAllCached() map[string]*models.Coordinates
-	ClearCache()
-	// Additional methods can be added as needed
-}
 
 // CoordinatesRepository manages geolocation data for concert locations
 type CoordinatesRepository struct {

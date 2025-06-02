@@ -9,19 +9,6 @@ import (
 	"groupie/utils"
 )
 
-type ArtistRepositoryInterface interface {
-	LoadData(apiIndex models.ApiIndex) error
-	GetArtistByID(id int) (*models.Artist, error)
-	GetArtistsByLocation(location string) []*models.Artist
-	GetArtistsByMemberCount(count int) []*models.Artist
-	GetArtistsByCreationYear(year int) []*models.Artist
-	GetArtistsByAlbumYear(year int) []*models.Artist
-	GetAllArtists() []*models.Artist
-	GetUniqueLocations() []string
-	GetMinYears() (minCreation, minAlbum int)
-	// Additional methods can be added as needed
-}
-
 // ArtistRepository manages all artist-related data and operations
 type ArtistRepository struct {
 	// Core data storage - use pointers to save memory
@@ -175,7 +162,7 @@ func (ar *ArtistRepository) buildOptimizedMaps(artists []models.Artist, location
 	// Build album year map (store IDs)
 	ar.albumYearMap = make(map[int][]int)
 	for _, artist := range ar.artists {
-		year := artist.GetFirstAlbumYear()
+		year := utils.ExtractYear(artist.FirstAlbum)
 		if year > 0 {
 			ar.albumYearMap[year] = append(ar.albumYearMap[year], artist.ID)
 		}
@@ -201,13 +188,13 @@ func (ar *ArtistRepository) updateMinYears() {
 	}
 
 	ar.minCreationYear = ar.artists[0].CreationDate
-	ar.minAlbumYear = ar.artists[0].GetFirstAlbumYear()
+	ar.minAlbumYear = utils.ExtractYear(ar.artists[0].FirstAlbum)
 
 	for _, artist := range ar.artists {
 		if artist.CreationDate < ar.minCreationYear {
 			ar.minCreationYear = artist.CreationDate
 		}
-		if albumYear := artist.GetFirstAlbumYear(); albumYear > 0 && albumYear < ar.minAlbumYear {
+		if albumYear := utils.ExtractYear(artist.FirstAlbum); albumYear > 0 && albumYear < ar.minAlbumYear {
 			ar.minAlbumYear = albumYear
 		}
 	}

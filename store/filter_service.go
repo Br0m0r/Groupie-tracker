@@ -1,6 +1,9 @@
 package store
 
-import "groupie/models"
+import (
+	"groupie/models"
+	"groupie/utils"
+)
 
 // ArtistFilter encapsulates filtering logic for fallback filtering
 type ArtistFilter struct {
@@ -78,7 +81,7 @@ func (af *ArtistFilter) matchesLocation(artist *models.Artist) bool {
 
 // matchesAlbumYear checks album year range (updated for pointers)
 func (af *ArtistFilter) matchesAlbumYear(artist *models.Artist) bool {
-	year := artist.GetFirstAlbumYear()
+	year := utils.ExtractYear(artist.FirstAlbum)
 	return year >= af.params.AlbumStartYear &&
 		year <= af.params.AlbumEndYear
 }

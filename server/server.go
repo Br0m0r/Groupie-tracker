@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"time"
 
+	"groupie/config"
 	"groupie/handlers"
 	"groupie/store"
 )
@@ -41,10 +42,8 @@ func SetupServer() *http.ServeMux {
 }
 
 func periodicDataRefresh(dataStore *store.DataStore) {
-	refreshInterval := 4 * time.Minute
-
 	// Delay first refresh so it won’t collide with initial Initialize()
-	time.Sleep(refreshInterval)
+	time.Sleep(config.REFRESH_INTERVAL)
 
 	for {
 		log.Println("Performing scheduled incremental refresh...")
@@ -60,6 +59,6 @@ func periodicDataRefresh(dataStore *store.DataStore) {
 			)
 		}
 
-		time.Sleep(refreshInterval)
+		time.Sleep(config.REFRESH_INTERVAL)
 	}
 }
