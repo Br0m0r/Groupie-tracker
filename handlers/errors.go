@@ -41,6 +41,7 @@ var (
 // ErrorHandler renders the error page template with provided error information
 // If template processing fails, falls back to basic HTTP error response
 func ErrorHandler(w http.ResponseWriter, errType ErrorType, description string) {
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.WriteHeader(errType.Status)
 
 	data := ErrorData{

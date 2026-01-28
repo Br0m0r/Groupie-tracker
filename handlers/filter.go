@@ -173,5 +173,6 @@ func executeFilterTemplate(w http.ResponseWriter, data models.FilterData) error 
 		return err
 	}
 
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	return tmpl.Execute(w, data)
 }

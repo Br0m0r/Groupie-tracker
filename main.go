@@ -10,11 +10,8 @@ import (
 	"groupie/store"
 )
 
-// API base URL and server port
-const (
-	baseURL = "https://groupietrackers.herokuapp.com/api"
-	port    = ":8080"
-)
+// Server port
+const port = ":8080"
 
 // setupServer configures and returns the HTTP router
 func setupServer() *http.ServeMux {

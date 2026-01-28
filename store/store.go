@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"sort"
 	"sync"
+	"time"
 
 	"groupie/models"
 	"groupie/utils"
@@ -28,28 +29,32 @@ func New() *DataStore { // constructor for new Struct Datastore { Artist []model
 }
 
 func (ds *DataStore) Initialize() error {
+	client := &http.Client{Timeout: 10 * time.Second}
+	fetchJSON := func(url string, target interface{}) error {
+		resp, err := client.Get(url)
+		if err != nil {
+			return fmt.Errorf("get %s: %w", url, err)
+		}
+		defer resp.Body.Close()
+		if resp.StatusCode != http.StatusOK {
+			return fmt.Errorf("get %s: unexpected status %s", url, resp.Status)
+		}
+		if err := json.NewDecoder(resp.Body).Decode(target); err != nil {
+			return fmt.Errorf("decode %s: %w", url, err)
+		}
+		return nil
+	}
+
 	// First get the API index
 	var index models.ApiIndex
-	resp, err := http.Get("https://groupietrackers.herokuapp.com/api")
-	if err != nil {
-		return fmt.Errorf("failed to fetch API index: %v", err)
-	}
-	defer resp.Body.Close()
-
-	if err := json.NewDecoder(resp.Body).Decode(&index); err != nil {
-		return fmt.Errorf("failed to decode API index: %v", err)
+	if err := fetchJSON("https://groupietrackers.herokuapp.com/api", &index); err != nil {
+		return fmt.Errorf("failed to fetch API index: %w", err)
 	}
 
 	// Fetch artists data
 	var artists []models.Artist
-	resp, err = http.Get(index.Artists)
-	if err != nil {
-		return fmt.Errorf("failed to fetch artists: %v", err)
-	}
-	defer resp.Body.Close()
-
-	if err := json.NewDecoder(resp.Body).Decode(&artists); err != nil {
-		return fmt.Errorf("failed to decode artists: %v", err)
+	if err := fetchJSON(index.Artists, &artists); err != nil {
+		return fmt.Errorf("failed to fetch artists: %w", err)
 	}
 
 	// Create wait group for concurrent fetching
@@ -65,15 +70,8 @@ func (ds *DataStore) Initialize() error {
 
 			// Fetch locations
 			var location models.Location
-			resp, err := http.Get(artist.Locations)
-			if err != nil {
-				errChan <- fmt.Errorf("failed to fetch locations for artist %d: %v", artist.ID, err)
-				return
-			}
-			defer resp.Body.Close()
-
-			if err := json.NewDecoder(resp.Body).Decode(&location); err != nil {
-				errChan <- err
+			if err := fetchJSON(artist.Locations, &location); err != nil {
+				errChan <- fmt.Errorf("failed to fetch locations for artist %d: %w", artist.ID, err)
 				return
 			}
 
@@ -93,14 +91,8 @@ func (ds *DataStore) Initialize() error {
 			}
 			// Fetch dates
 			var date models.Date
-			resp, err = http.Get(artist.ConcertDates)
-			if err != nil {
-				errChan <- fmt.Errorf("failed to fetch dates for artist %d: %v", artist.ID, err)
-				return
-			}
-			defer resp.Body.Close()
-			if err := json.NewDecoder(resp.Body).Decode(&date); err != nil {
-				errChan <- err
+			if err := fetchJSON(artist.ConcertDates, &date); err != nil {
+				errChan <- fmt.Errorf("failed to fetch dates for artist %d: %w", artist.ID, err)
 				return
 			}
 			for _, date := range date.Dates {
@@ -109,14 +101,8 @@ func (ds *DataStore) Initialize() error {
 
 			// Fetch relations
 			var relation models.Relation
-			resp, err = http.Get(artist.Relations)
-			if err != nil {
-				errChan <- fmt.Errorf("failed to fetch relations for artist %d: %v", artist.ID, err)
-				return
-			}
-			defer resp.Body.Close()
-			if err := json.NewDecoder(resp.Body).Decode(&relation); err != nil {
-				errChan <- err
+			if err := fetchJSON(artist.Relations, &relation); err != nil {
+				errChan <- fmt.Errorf("failed to fetch relations for artist %d: %w", artist.ID, err)
 				return
 			}
 			artist.RelationsList = utils.FormatRelation(relation.DatesLocations)

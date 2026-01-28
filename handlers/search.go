@@ -45,6 +45,7 @@ func SearchHandler(w http.ResponseWriter, r *http.Request) {
 			Results: results,
 		}
 
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		if err := tmpl.Execute(w, data); err != nil {
 			ErrorHandler(w, ErrInternalServer, "Failed to execute template")
 			return
@@ -64,6 +65,7 @@ func SearchHandler(w http.ResponseWriter, r *http.Request) {
 		Results: nil,
 	}
 
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	if err := tmpl.Execute(w, data); err != nil {
 		ErrorHandler(w, ErrInternalServer, "Failed to execute template")
 	}
