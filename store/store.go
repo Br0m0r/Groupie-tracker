@@ -22,7 +22,7 @@ type DataStore struct {
 	}
 }
 
-func New() *DataStore { // constructor for new Struct Datastore { Artist []model.Artist }
+func New() *DataStore {
 	return &DataStore{
 		Artists: make([]models.Artist, 0),
 	}
@@ -45,42 +45,35 @@ func (ds *DataStore) Initialize() error {
 		return nil
 	}
 
-	// First get the API index
 	var index models.ApiIndex
 	if err := fetchJSON("https://groupietrackers.herokuapp.com/api", &index); err != nil {
 		return fmt.Errorf("failed to fetch API index: %w", err)
 	}
 
-	// Fetch artists data
 	var artists []models.Artist
 	if err := fetchJSON(index.Artists, &artists); err != nil {
 		return fmt.Errorf("failed to fetch artists: %w", err)
 	}
 
-	// Create wait group for concurrent fetching
 	var wg sync.WaitGroup
 	errChan := make(chan error, len(artists))
 
-	// Fetch additional data for each artist concurrently
 	for i := range artists {
 		wg.Add(1)
 		go func(artist *models.Artist) {
 			defer wg.Done()
 			artist.LocationStatesCities = make(map[string][]string)
 
-			// Fetch locations
-			var location models.Location
+					var location models.Location
 			if err := fetchJSON(artist.Locations, &location); err != nil {
 				errChan <- fmt.Errorf("failed to fetch locations for artist %d: %w", artist.ID, err)
 				return
 			}
 
-			// Process each location
 			for _, loc := range location.Locations {
 				formattedLoc := utils.FormatLocation(loc)
 				artist.LocationsList = append(artist.LocationsList, formattedLoc)
 
-				// Check if this location is in our StateCityMap
 				for state, cities := range utils.StateCityMap {
 					for _, city := range cities {
 						if formattedLoc == city {
@@ -89,7 +82,6 @@ func (ds *DataStore) Initialize() error {
 					}
 				}
 			}
-			// Fetch dates
 			var date models.Date
 			if err := fetchJSON(artist.ConcertDates, &date); err != nil {
 				errChan <- fmt.Errorf("failed to fetch dates for artist %d: %w", artist.ID, err)
@@ -99,7 +91,6 @@ func (ds *DataStore) Initialize() error {
 				artist.DatesList = append(artist.DatesList, utils.FormatDate(date))
 			}
 
-			// Fetch relations
 			var relation models.Relation
 			if err := fetchJSON(artist.Relations, &relation); err != nil {
 				errChan <- fmt.Errorf("failed to fetch relations for artist %d: %w", artist.ID, err)
@@ -109,23 +100,20 @@ func (ds *DataStore) Initialize() error {
 		}(&artists[i])
 	}
 
-	// Wait for all goroutines to complete
 	go func() {
 		wg.Wait()
 		close(errChan)
 	}()
 
-	// Check for any errors
 	for err := range errChan {
 		if err != nil {
 			return err
 		}
 	}
 
-	// Store the data
 	ds.mu.Lock()
 	ds.Artists = artists
-	// Calculate and store unique locations
+
 	locationMap := make(map[string]bool)
 	for _, artist := range artists {
 		for _, location := range artist.LocationsList {
@@ -133,7 +121,6 @@ func (ds *DataStore) Initialize() error {
 		}
 	}
 
-	// Convert map to sorted slice
 	ds.UniqueLocations = make([]string, 0, len(locationMap))
 	for location := range locationMap {
 		ds.UniqueLocations = append(ds.UniqueLocations, location)

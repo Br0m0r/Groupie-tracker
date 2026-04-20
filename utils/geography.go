@@ -1,6 +1,5 @@
 package utils
 
-// stateCityMap maps US states to their cities from our dataset
 var StateCityMap = map[string][]string{
 	"Washington, Usa":     {"Seattle, Usa"},
 	"California, Usa":     {"Los Angeles, Usa", "Anaheim, Usa", "Oakland, Usa", "Del Mar, Usa", "San Francisco, Usa", "Pico Rivera, Usa", "Inglewood, Usa"},

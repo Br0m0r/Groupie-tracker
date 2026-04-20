@@ -1,37 +1,65 @@
 # Groupie Tracker
 
-Groupie Tracker is a Go web app that visualizes artists, their concert locations, and dates using the Groupie Trackers API.
+A web application built with Go that visualizes music artist data, concert locations, and tour dates using the [Groupie Trackers API](https://groupietrackers.herokuapp.com/api). Concert locations are displayed on an interactive map powered by Leaflet and OpenStreetMap.
 
 ## Features
-- Artist list with detail pages
-- Search with live suggestions (artist, member, location, dates)
-- Filters by creation date, first album year, member count, and locations
-- Concert locations map (Leaflet + OpenStreetMap) with geocoding via Nominatim
+
+| Feature | Description |
+|---------|-------------|
+| Artist Directory | Browse all artists with detail pages |
+| Search | Live suggestions across artists, members, locations, and dates |
+| Filters | Filter by creation date, first album year, member count, and location |
+| Concert Map | Interactive map with geocoded concert locations via Nominatim |
 
 ## Requirements
-- Go 1.22+
+
+- Go 1.22 or later
 - Internet access (API data, map tiles, geocoding)
 
-## Run
+## Getting Started
+
+### Manual
+
 ```bash
 go run main.go
 ```
-Open `http://localhost:8080`
+
+The server starts at `http://localhost:8080`.
+
+### Docker
+
+```dockerfile
+FROM golang:1.22-alpine
+WORKDIR /app
+COPY . .
+RUN go build -o groupie .
+EXPOSE 8080
+CMD ["./groupie"]
+```
+
+```bash
+docker build -t groupie-tracker .
+docker run -p 8080:8080 groupie-tracker
+```
 
 ## Routes
-- `GET /` home page
-- `GET /artist?id={id}` artist details
-- `GET /search?q={query}` search page / suggestions
-- `GET /filter` filtered results
-- `GET /api/coordinates?id={id}` artist map coordinates (JSON)
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/` | Home page with artist grid |
+| GET | `/artist?id={id}` | Artist detail page |
+| GET | `/search?q={query}` | Search results (HTML) or suggestions (JSON via XHR) |
+| GET | `/filter` | Filtered artist results |
+| GET | `/api/coordinates?id={id}` | Concert location coordinates (JSON) |
 
 ## Project Structure
+
 ```
-main.go
-handlers/
-models/
-store/
-utils/
-templates/
-static/
+main.go              Entry point and server configuration
+handlers/            HTTP request handlers
+models/              Data structures
+store/               Data fetching, caching, and storage
+utils/               Formatting and helper functions
+templates/           HTML templates
+static/              CSS and JavaScript assets
 ```

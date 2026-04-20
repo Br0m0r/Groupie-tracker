@@ -9,8 +9,6 @@ import (
 	"groupie/utils"
 )
 
-// FilterHandler processes filter requests and returns filtered artists
-// In handlers/filter.go
 func FilterHandler(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
 		ErrorHandler(w, ErrBadRequest, "Invalid form data")
@@ -46,7 +44,6 @@ func FilterHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// Add helper function to compare filter params
 func isDefaultParams(params, defaultParams models.FilterParams) bool {
 	return len(params.MemberCounts) == 0 &&
 		len(params.Locations) == 0 &&
@@ -56,17 +53,14 @@ func isDefaultParams(params, defaultParams models.FilterParams) bool {
 		params.AlbumEndYear == defaultParams.AlbumEndYear
 }
 
-// ArtistFilter encapsulates filtering logic
 type ArtistFilter struct {
 	params models.FilterParams
 }
 
-// NewArtistFilter creates a new filter with given parameters
 func NewArtistFilter(params models.FilterParams) *ArtistFilter {
 	return &ArtistFilter{params: params}
 }
 
-// Filter applies all filters to the artist list
 func (af *ArtistFilter) Filter(artists []models.Artist) []models.Artist {
 	var filtered []models.Artist
 	for _, artist := range artists {
@@ -77,7 +71,6 @@ func (af *ArtistFilter) Filter(artists []models.Artist) []models.Artist {
 	return filtered
 }
 
-// matches checks if an artist matches all filter criteria
 func (af *ArtistFilter) matches(artist models.Artist) bool {
 	return af.matchesMemberCount(artist) &&
 		af.matchesCreationDate(artist) &&
@@ -85,7 +78,6 @@ func (af *ArtistFilter) matches(artist models.Artist) bool {
 		af.matchesAlbumYear(artist)
 }
 
-// matchesMemberCount checks if artist matches member count filter
 func (af *ArtistFilter) matchesMemberCount(artist models.Artist) bool {
 	if len(af.params.MemberCounts) == 0 {
 		return true
@@ -104,15 +96,12 @@ func (af *ArtistFilter) matchesMemberCount(artist models.Artist) bool {
 	return false
 }
 
-// matchesCreationDate checks if artist matches creation date range
 func (af *ArtistFilter) matchesCreationDate(artist models.Artist) bool {
 	return artist.CreationDate >= af.params.CreationStart &&
 		artist.CreationDate <= af.params.CreationEnd
 }
 
-// matchesLocation checks if artist matches location filters
 func (af *ArtistFilter) matchesLocation(artist models.Artist) bool {
-	// If no locations are selected in filter, return true
 	if len(af.params.Locations) == 0 {
 		return true
 	}
@@ -120,15 +109,12 @@ func (af *ArtistFilter) matchesLocation(artist models.Artist) bool {
 	for _, filterLocation := range af.params.Locations {
 		filterLocationLower := strings.ToLower(filterLocation)
 
-		// Method 1: Check direct matches in LocationsList
 		for _, artistLocation := range artist.LocationsList {
 			if strings.Contains(strings.ToLower(artistLocation), filterLocationLower) {
 				return true
 			}
 		}
 
-		// Method 2: Check state-city mapping
-		// If artist has cities in this state, return true
 		if citiesInState, exists := artist.LocationStatesCities[filterLocation]; exists && len(citiesInState) > 0 {
 			return true
 		}
@@ -137,14 +123,12 @@ func (af *ArtistFilter) matchesLocation(artist models.Artist) bool {
 	return false
 }
 
-// matchesAlbumYear checks if artist matches album year range
 func (af *ArtistFilter) matchesAlbumYear(artist models.Artist) bool {
 	albumYear := utils.ExtractYear(artist.FirstAlbum)
 	return albumYear >= af.params.AlbumStartYear &&
 		albumYear <= af.params.AlbumEndYear
 }
 
-// Helper function to extract filter parameters from request
 func extractFilterParams(r *http.Request) models.FilterParams {
 	return models.FilterParams{
 		MemberCounts:   utils.GetMemberCounts(r),
@@ -156,7 +140,6 @@ func extractFilterParams(r *http.Request) models.FilterParams {
 	}
 }
 
-// Helper function to execute the filter template .
 func executeFilterTemplate(w http.ResponseWriter, data models.FilterData) error {
 	funcMap := template.FuncMap{
 		"iterate": func(start, end int) []int {
